@@ -75,7 +75,6 @@ const adminRegistor = async (req, res) => {
         
         const {password, emailId} = req.body;
         req.body.password = await bcrypt.hash(password, 10);
-        req.body.role = "admin";
         const user = await User.create(req.body);
 
         res.status(201).send('User Registor Succesfully');
