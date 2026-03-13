@@ -1,47 +1,11 @@
-const {getLanguageId, submitBatch, submitToken, getJudgeError} = require('../utils/problemUtility');
+const {getLanguageId, submitBatch, submitToken, getJudgeError, testCode} = require('../utils/problemUtility');
 const Problem = require('../models/problem');
 
-const createProblem = async (req, res, next) => {
+const createProblem = async (req, res) => {
     try{
         const {title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution} = req.body;
         
-        for(const {language, completeCode} of referenceSolution){
-            //source_code
-            //language_id
-            //stdin
-            //expected_output
-
-            const languageId = getLanguageId(language);
-            if(!languageId) return res.status(400).send("Unsupported language");
-
-
-            const submissions = visibleTestCases.map((testCases) => ({
-                source_code: completeCode,
-                language_id: languageId,
-                stdin: testCases.input,
-                expected_output: testCases.output
-            }));
-
-            const submitResult = await submitBatch(submissions);
-            
-            //just map array of only tokens
-            const resultTokens = submitResult.map((value) => value.token);
-
-            const testResult = await submitToken(resultTokens);
-
-            for(const test of testResult){
-                if(test.status_id !== 3){ 
-                    console.log("Judge0 Failure:", {
-                        status: test.status.description,
-                        stdout: test.stdout,
-                        expected: test.expected_output,
-                        compile_output: test.compile_output
-                    });
-                    const errorMessage = test.stderr || getJudgeError(test.status_id); 
-                    return res.status(400).send("Erro: " + errorMessage); 
-                }
-            }
-        }
+        await testCode(visibleTestCases, referenceSolution);
 
         //we can store this problem in our db
         await Problem.create({
@@ -53,8 +17,97 @@ const createProblem = async (req, res, next) => {
 
     }
     catch(err) {
-        res.status(500).send("Error: "+err.message);
+        if(err.statusCode) res.status(err.statusCode).send("Error: "+err.message);
+
+        res.status(500).end("Error: "+err.message);
     }
 }
 
-module.exports = createProblem;
+const updateProblem = async (req, res) => {
+    const {id} = req.params;
+    const {visibleTestCases, referenceSolution} = req.body;
+    
+    try{   
+        
+        if(!id){
+            res.status(400).send("Error: Missing ID");
+            return;
+        }
+
+        const DsaProbelm =  await Problem.findById(id);
+
+        if(!DsaProbelm) {
+            res.status(404).send("Error: Problem is missing");
+            return;
+        }
+        
+        await testCode(visibleTestCases, referenceSolution);
+
+        const newProblem = await Problem.findByIdAndUpdate(id, {...req.body}, {runValidators: true, new: true});
+
+        res.status(200).send(`Problem updated successfullt ${newProblem.title}`);
+   
+    }
+    catch(err){
+        if(err.statusCode) res.status(err.statusCode).send("Error: "+err.message);
+
+        res.status(500).end("Error: "+err.message);
+    }
+}
+
+const deleteProblem = async (req, res) => {
+    const {id} = req.params;
+    try{
+        if(!id) return res.status(400).send("Error: ID Missing");
+
+        const deletedProblem = await Problem.findByIdAndDelete(id);
+
+        if(!deletedProblem) return res.status(404).send("Problem is missing");
+        
+        res.status(200).send(`Successfully deleted ${deletedProblem.title}`);
+    }
+    catch(err){
+        res.status(500).send("Error: "+ err.message);
+    }
+}
+
+const getProblemById = async (req, res) => {
+    const {id} = req.params;
+
+    try{
+        if(!id) return res.status(400).send("Error: ID Missing");
+
+        const getProblem = await Problem.findById(id).select("-hiddenTestCases");
+
+        if(!getProblem) return res.status(404).send("Problem is missing");
+        res.status(200).send(getProblem);
+    }
+    catch(err){
+        res.status(500).send("Error: "+ err.message);
+    }
+} 
+
+const getAllProblems = async (req, res) => {
+    try{
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = 10;
+        const skipValue = (page - 1) * limit;
+        const problems = await Problem.find({}).skip(skipValue).limit(limit).select("title difficulty tags");
+        const totalProblems = await Problem.countDocuments();
+        res.status(200).json({
+            totalProblems,
+            totalPages: Math.ceil(totalProblems / limit),
+            currentPage: page,
+            problems
+        });
+    }
+    catch(err){
+        res.status(500).send("Error: "+ err.message);
+    }
+}
+
+const solvedAllProblemsByUser = async (req, res) => {
+
+}
+
+module.exports = {createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemsByUser};
