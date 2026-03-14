@@ -3,10 +3,10 @@ const express = require('express');
 const problemRouter = express.Router();
 const adminAuthMiddleware = require('../middleware/adminAuthMiddleware');
 const userAuthMiddleware = require('../middleware/userAuthMiddleware');
-const {createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemsByUser} = require('../controllers/userProblem');
+const {createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemsByUser} = require('../controllers/problemController');
 
 problemRouter.post('/create',adminAuthMiddleware, createProblem);
-problemRouter.patch('/update/:id', adminAuthMiddleware, updateProblem);
+problemRouter.put('/update/:id', adminAuthMiddleware, updateProblem);
 problemRouter.delete('/delete/:id', adminAuthMiddleware, deleteProblem);
 
 

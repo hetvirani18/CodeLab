@@ -102,8 +102,8 @@ const getJudgeError = (statusId) => {
     return errors[statusId] || "Execution Error";
 };
 
-const testCode = async (visibleTestCases, referenceSolution) => {
-    for(const {language, completeCode} of referenceSolution){
+const testCode = async (testCases, solution) => {
+    for(const {language, completeCode} of solution){
         //source_code
         //language_id
         //stdin
@@ -117,7 +117,7 @@ const testCode = async (visibleTestCases, referenceSolution) => {
         }
 
 
-        const submissions = visibleTestCases.map((testCases) => ({
+        const submissions = testCases.map((testCases) => ({
             source_code: completeCode,
             language_id: languageId,
             stdin: testCases.input,
@@ -130,6 +130,7 @@ const testCode = async (visibleTestCases, referenceSolution) => {
         const resultTokens = submitResult.map((value) => value.token);
 
         const testResult = await submitToken(resultTokens);
+        console.log(testResult);
 
         for(const test of testResult){
             if(test.status_id !== 3){ 
