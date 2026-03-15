@@ -135,7 +135,21 @@ const runCode = async (req, res) => {
     }
 }
 
-module.exports = {submitCode, runCode};
+const getSubmissions = async (req, res) => {
+    try{
+        const userId = req.result._id;
+        const problemId = req.params.id;
+
+        const ans = await Submission.find({userId, problemId});
+
+        res.status(200).send(ans);
+    }
+    catch(err){
+        res.status(500).send("Error: "+err.message);
+    }
+}
+
+module.exports = {submitCode, runCode, getSubmissions};
 
 // const temp = {
 //     source_code: 'import java.util.*;\n' +

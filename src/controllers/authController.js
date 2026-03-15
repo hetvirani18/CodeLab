@@ -3,6 +3,7 @@ const validate = require('../utils/validator');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const redisClient = require('../config/redis');
+const Submission = require('../models/submission');
 
 const register = async (req, res) => {
     try{
@@ -85,8 +86,27 @@ const adminRegistor = async (req, res) => {
 }
 
 const getProfile = async (req, res) => {
-    res.status(200).send(req.result);
+    const user = req.result;
+    const ans = {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        emailId: user.emailId,
+        problemSolved: user.problemSolved
+    }
+    res.status(200).send(ans);
 }
 
+const deleteProfile = async(req, res) => {
+    try{
+        const userId = req.result._id;
+        await User.findByIdAndDelete(userId);
 
-module.exports = {register, login, logout, getProfile, adminRegistor};
+        res.status(200).send("Profile Deleted successfully.");
+    }
+    catch(err){
+        res.status(500).send("Error: "+err.message);
+    }
+}
+
+module.exports = {register, login, logout, getProfile, adminRegistor, deleteProfile};
