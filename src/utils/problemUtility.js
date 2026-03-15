@@ -2,6 +2,19 @@ const axios = require('axios');
 
 const JUDGE0_URL = process.env.JUDGE0_URL;
 
+// Encodes plain text to Base64
+const encode = (str) => {
+    if (!str) return "";
+    return Buffer.from(str).toString('base64');
+};
+
+// Decodes Base64 back to plain text
+const decode = (str) => {
+    if (!str) return "";
+    return Buffer.from(str, 'base64').toString('utf-8');
+};
+
+
 const getLanguageId = (lang) => {
     const language = {
         "c++": 54,
@@ -18,7 +31,7 @@ const submitBatch = async (submissions) => {
         method: 'POST',
         url: `${JUDGE0_URL}/submissions/batch`,
         params: {
-            base64_encoded: 'false'
+            base64_encoded: 'true'
         },
         headers: {
             'Content-Type': 'application/json'
@@ -56,7 +69,7 @@ const submitToken = async(resultTokens) => {
         url: `${JUDGE0_URL}/submissions/batch`,
         params: {
             tokens: resultTokens.join(","), 
-            base64_encoded: 'false',
+            base64_encoded: 'true',
             fields: '*'
         },
     };
@@ -86,22 +99,6 @@ const submitToken = async(resultTokens) => {
 
 }
 
-const getJudgeError = (statusId) => {
-    const errors = {
-        4: "Wrong Answer",
-        5: "Time Limit Exceeded",
-        6: "Compilation Error",
-        7: "Runtime Error (Segmentation Fault)",
-        8: "Runtime Error",
-        9: "Runtime Error",
-        10: "Runtime Error (Program Aborted)",
-        11: "Runtime Error",
-        12: "Memory Limit Exceeded"
-    };
-
-    return errors[statusId] || "Execution Error";
-};
-
 const testCode = async (testCases, solution) => {
     for(const {language, completeCode} of solution){
         //source_code
@@ -111,17 +108,17 @@ const testCode = async (testCases, solution) => {
 
         const languageId = getLanguageId(language);
         if(!languageId){
-            let error = new Error('laguage unsopported');
+            let error = new Error('language unsupported');
             error.statusCode(400);
             throw error;
         }
 
 
         const submissions = testCases.map((testCases) => ({
-            source_code: completeCode,
+            source_code: encode(completeCode),
             language_id: languageId,
-            stdin: testCases.input,
-            expected_output: testCases.output
+            stdin: encode(testCases.input),
+            expected_output: encode(testCases.output)
         }));
 
         const submitResult = await submitBatch(submissions);
@@ -134,13 +131,9 @@ const testCode = async (testCases, solution) => {
 
         for(const test of testResult){
             if(test.status_id !== 3){ 
-                console.log("Judge0 Failure:", {
-                    status: test.status.description,
-                    stdout: test.stdout,
-                    expected: test.expected_output,
-                    compile_output: test.compile_output
-                });
-                const errorMessage = test.stderr || getJudgeError(test.status_id); 
+                const decodedError = decode(test.stderr || test.compile_output);
+
+                const errorMessage = decodedError || `Failure: ${test.status?.description || "Execution Error"}`;
                 let error = new Error(errorMessage);
                 error.statusCode = 400;
                 throw error;
@@ -149,4 +142,4 @@ const testCode = async (testCases, solution) => {
     }
 }
 
-module.exports = {getLanguageId, submitBatch, submitToken, getJudgeError, testCode};
+module.exports = {getLanguageId, submitBatch, submitToken, testCode, encode, decode};
