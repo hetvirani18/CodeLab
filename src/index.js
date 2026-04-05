@@ -7,9 +7,12 @@ const authRouter = require('./routes/authRouter');
 const redisClient = require('./config/redis');
 const problemRouter = require('./routes/problemRouter');
 const submitRouter = require('./routes/submitRouter');
+const {rateLimiter} = require('./middleware/rateLimiter');
 
 app.use(express.json());
 app.use(cookieParser());
+
+app.use(rateLimiter); // Apply the rate limiter middleware globally
 
 app.use('/user', authRouter);
 app.use('/problem', problemRouter);
