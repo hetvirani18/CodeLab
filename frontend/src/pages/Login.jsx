@@ -2,23 +2,33 @@ import { useEffect, useState } from "react";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from "zod";
+import { loginUser } from "../store/authSlice";
+import { useNavigate } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
 
-//Schema validation for signup
 
-const signupSchema = z.object({
-    firstName: z.string().min(3, "First Name should be at least 3 characters long"),
+const loginSchema = z.object({
     emailId: z.string().email("Invalid email address"),
     password: z.string().min(8, "Password should be at least 8 characters long")
 })
 
 function Login () {   
-    const { register, handleSubmit, formState: { errors }} = useForm({resolver: zodResolver(signupSchema)});
+
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
+
+    useEffect(() => {
+        if(isAuthenticated){
+            navigate('/');
+        }
+    }, [isAuthenticated, navigate]); //you can remove navigate from dependency array as well 
 
     const onSubmit = (data) => {
-        console.log(data);
-
-        // Backend data ko send kar dena chaiye?
+        dispatch(loginUser(data));
     };
+
+    const { register, handleSubmit, formState: { errors }} = useForm({resolver: zodResolver(loginSchema)});
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4"> {/* Centering container */}

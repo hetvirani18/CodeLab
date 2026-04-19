@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from "zod";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router";
+import { registerUser } from "../store/authSlice";
 
 //Schema validation for signup
 
@@ -12,16 +15,25 @@ const signupSchema = z.object({
 })
 
 function Signup () {   
-    const { register, handleSubmit, formState: { errors }} = useForm({resolver: zodResolver(signupSchema)});
+
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
+
+    useEffect(() => {
+        if(isAuthenticated){
+            navigate('/');
+        }
+    }, [isAuthenticated, navigate]); //you can remove navigate from dependency array as well 
 
     const onSubmit = (data) => {
-        console.log(data);
-
-        // Backend data ko send kar dena chaiye?
+        dispatch(registerUser(data));
     };
 
+    const { register, handleSubmit, formState: { errors }} = useForm({resolver: zodResolver(signupSchema)});
+
     return (
-        <div className="min-h-screen flex items-center justify-center p-4"> {/* Centering container */}
+        <div className="min-h-screen flex items-center justify-center p-4"> {/* Centering container */} 
             <div className="card w-96 bg-base-100 shadow-xl"> {/* Existing card styling */}
                 <div className="card-body">
                     <h2 className="card-title justify-center text-3xl">Leetcode</h2> {/* Centered title */}
@@ -51,7 +63,7 @@ function Signup () {
                                 type="email"
                                 placeholder="het@gmail.com"
                                 className={`input input-bordered ${errors.emailId && 'input-error'}`}
-                                {...register('emailId')}
+                                {...register('  ')}
                             />
                             {errors.emailId && (
                                 <span className="text-error">{errors.emailId.message}</span>

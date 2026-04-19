@@ -10,5 +10,15 @@ authRouter.post('/logout', userAuthMiddleware, logout);
 authRouter.post('/admin/register', adminAuthMiddleware, adminRegistor);
 authRouter.get('/profile', userAuthMiddleware, getProfile);
 authRouter.delete('/delete-profile', userAuthMiddleware, deleteProfile);
+authRouter.get('/check', userAuthMiddleware, (req, res) => {
+    res.status(200).json({
+        message: "Token is valid",
+        user: {
+            _id: req.result._id,
+            firstName: req.result.firstName,
+            emailId: req.result.emailId,
+        }
+    })
+})
 
 module.exports = authRouter;

@@ -17,10 +17,17 @@ const register = async (req, res) => {
 
         const token = jwt.sign({_id: user._id, emailId: emailId, role: 'user'}, process.env.JWT_KEY, {expiresIn: '1h'});
         res.cookie ('token', token, {maxAge: 3600*1000});
-        res.status(201).send('User Registor Succesfully');
+        res.status(200).json({
+            message: 'User Registor Succesfully',
+            user: {
+                _id: user._id,
+                firstName: user.firstName,
+                emailId: user.emailId
+            }
+        });
     }
     catch(err){
-        res.status(400).send("Error: "+ err.message);
+        res.status(400).json({message: "Error: "+ err.message});
     }
 }
 
@@ -42,11 +49,18 @@ const login = async (req, res) => {
         const token = jwt.sign({_id: user._id, emailId: emailId, role: user.role}, process.env.JWT_KEY, {expiresIn: '1h'});
         res.cookie ('token', token, {maxAge: 3600*1000});
 
-        res.status(200).send("Login Successful");
+        res.status(201).json({
+            message: "Login Successful",
+            user: {
+                _id: user._id,
+                firstName: user.firstName,
+                emailId: user.emailId
+            }
+        });
         
     }
     catch(err){
-        res.status(401).send("Error: "+ err.message);
+        res.status(401).json({message: "Error: "+ err.message});
     }
 }
  
@@ -62,10 +76,10 @@ const logout = async (req, res) => {
         //clear cookie
         res.cookie('token', null, {expires: new Date(0)});
 
-        res.send("Logged Out Successfully");
+        res.json({message: "Logged Out Successfully"});
     }
     catch(err){
-        res.status(503).send("Error: "+ err.message);
+        res.status(503).json({message: "Error: "+ err.message});
     }
 }
 
@@ -78,10 +92,17 @@ const adminRegistor = async (req, res) => {
         req.body.password = await bcrypt.hash(password, 10);
         const user = await User.create(req.body);
 
-        res.status(201).send('User Registor Succesfully');
+        res.status(201).json({
+            message: 'User Registor Succesfully',
+            user: {
+                _id: user._id,
+                firstName: user.firstName,
+                emailId: user.emailId
+            }
+        });
     }
     catch(err){
-        res.status(400).send("Error: "+ err.message);
+        res.status(400).json({message: "Error: "+ err.message});
     }
 }
 
@@ -94,7 +115,7 @@ const getProfile = async (req, res) => {
         emailId: user.emailId,
         problemSolved: user.problemSolved
     }
-    res.status(200).send(ans);
+    res.status(200).json(ans);
 }
 
 const deleteProfile = async(req, res) => {
@@ -102,10 +123,10 @@ const deleteProfile = async(req, res) => {
         const userId = req.result._id;
         await User.findByIdAndDelete(userId);
 
-        res.status(200).send("Profile Deleted successfully.");
+        res.status(200).json({message: "Profile Deleted successfully."});
     }
     catch(err){
-        res.status(500).send("Error: "+err.message);
+        res.status(500).json({message: "Error: "+err.message});
     }
 }
 

@@ -8,6 +8,12 @@ const redisClient = require('./config/redis');
 const problemRouter = require('./routes/problemRouter');
 const submitRouter = require('./routes/submitRouter');
 const {rateLimiter} = require('./middleware/rateLimiter');
+const cors = require('cors');
+
+app.use(cors({
+    origin: 'http://localhost:5173', 
+    credentials: true, 
+}))
 
 app.use(express.json());
 app.use(cookieParser());
