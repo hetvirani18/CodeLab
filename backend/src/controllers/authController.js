@@ -22,7 +22,8 @@ const register = async (req, res) => {
             user: {
                 _id: user._id,
                 firstName: user.firstName,
-                emailId: user.emailId
+                emailId: user.emailId,
+                role: user.role
             }
         });
     }
@@ -54,7 +55,8 @@ const login = async (req, res) => {
             user: {
                 _id: user._id,
                 firstName: user.firstName,
-                emailId: user.emailId
+                emailId: user.emailId,
+                role: user.role
             }
         });
         
@@ -97,7 +99,9 @@ const adminRegistor = async (req, res) => {
             user: {
                 _id: user._id,
                 firstName: user.firstName,
-                emailId: user.emailId
+                emailId: user.emailId,
+                role: user.role
+
             }
         });
     }

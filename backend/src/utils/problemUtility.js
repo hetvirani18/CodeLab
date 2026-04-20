@@ -109,7 +109,7 @@ const testCode = async (testCases, solution) => {
         const languageId = getLanguageId(language);
         if(!languageId){
             let error = new Error('language unsupported');
-            error.statusCode(400);
+            error.statusCode = 400;
             throw error;
         }
 

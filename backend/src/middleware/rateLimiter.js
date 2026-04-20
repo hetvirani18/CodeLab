@@ -2,7 +2,7 @@ const redisClient = require('../config/redis');
 const crypto = require('crypto');
 
 const windowSize = process.env.WINDOW_SIZE || 60*60; //default 1 hour in seconds
-const maxRequests = process.env.MAX_REQUESTS || 100; //default 100 requests per hour
+const maxRequests = process.env.MAX_REQUESTS ; //default 100 requests per hour
 const maxRunRequests = process.env.MAX_RUN_REQUESTS || 50; //default 50 run requests per hour
 const delayRunTime = process.env.DELAY_RUN_TIME || 10; //default 10 seconds
 const delaySubmitTime = process.env.SUBMIT_RUN_TIME || 10; //default 10 seconds

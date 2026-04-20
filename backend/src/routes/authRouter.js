@@ -17,6 +17,7 @@ authRouter.get('/check', userAuthMiddleware, (req, res) => {
             _id: req.result._id,
             firstName: req.result.firstName,
             emailId: req.result.emailId,
+            role: req.result.role
         }
     })
 })

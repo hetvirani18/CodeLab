@@ -15,13 +15,13 @@ const createProblem = async (req, res) => {
             problemCreator: req.result._id
         })
 
-        res.status(201).send("Problem saved successfully");
+        res.status(201).json({ message: "Problem saved successfully" });
 
     }
     catch(err) {
-        if(err.statusCode) res.status(err.statusCode).send("Error: "+err.message);
+        if(err.statusCode) return res.status(err.statusCode).json({ error: "Error: " + err.message });
 
-        res.status(500).end("Error: "+err.message);
+        res.status(500).json({ error: "Error: " + err.message });
     }
 }
 
