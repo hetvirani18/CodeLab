@@ -25,7 +25,7 @@ const submitCode = async (req, res) => {
         //send code to judge0
         const languageId = getLanguageId(language);
 
-        if(!languageId) return res.staus(400).send('laguage is not supported');
+        if(!languageId) return res.status(400).send('laguage is not supported');
 
         const submissions = problem.hiddenTestCases.map((testCases) => ({
             source_code: encode(code),
@@ -55,7 +55,13 @@ const submitCode = async (req, res) => {
                 memory = Math.max(memory, test.memory);
             }
             else{
-                const statusMap = { 4: 'wrong', 5: 'tle', 12: 'mle' };
+                const statusMap = {
+                    4: 'wrong',
+                    5: 'tle',
+                    6: 'compile_error',
+                    7: 'runtime_error',
+                    12: 'mle'
+                };
                 status = statusMap[test.status_id] || 'error';
 
                 submittedResult.failDetails = {
@@ -65,15 +71,10 @@ const submitCode = async (req, res) => {
                     caseNumber: testCasesPassed+1                
                 };
 
-                submittedResult.errorMessage = decode(test.stderr) || decode(test.compile_output) || `${test.status?.description || "Execution Error"}`;
+                submittedResult.errorMessage = test.stderr ? decode(test.stderr) : test.compile_output ? decode(test.compile_output) : test.status?.description || "Execution Error";
                 break;
             }
         }
-
-        submittedResult.status = status;
-        submittedResult.runtime = runtime*1000;
-        submittedResult.memory = memory;
-        submittedResult.testCasesPassed = testCasesPassed;
 
         await submittedResult.save();
 
@@ -83,7 +84,14 @@ const submitCode = async (req, res) => {
             await req.result.save();
         }
 
-        res.status(201).send(submittedResult);
+        const accepted = (status == 'accepted')
+        res.status(201).json({
+            accepted,
+            totalTestCases: submittedResult.testCasesTotal,
+            passedTestCases: testCasesPassed,
+            runtime: runtime * 1000,
+            memory: memory
+        });
     }
     catch(err){
         res.status(500).send("Error: "+err.message);
@@ -104,7 +112,7 @@ const runCode = async (req, res) => {
         //send code to judge0
         const languageId = getLanguageId(language);
 
-        if(!languageId) return res.staus(400).send('laguage is not supported');
+        if(!languageId) return res.status(400).send('laguage is not supported');
 
         const submissions = problem.visibleTestCases.map((testCases) => ({
             source_code: encode(code),
@@ -120,15 +128,48 @@ const runCode = async (req, res) => {
 
         const testResult = await submitToken(resultTokens);
 
-        const processedResults = testResult.map((result) => ({
-            status: result.status.description, // "Accepted", "Wrong Answer", etc.
+        const processedResults = testResult.map((result, index) => ({
+            stdin: problem.visibleTestCases[index].input,
+            expected_output: problem.visibleTestCases[index].output,
+            status: result.status.description,
             status_id: result.status_id,
-            stdout: decode(result.stdout),
-            stderr: decode(result.stderr),
-            compile_output: decode(result.compile_output),
+            stdout: result.stdout ? decode(result.stdout) : null,
+            stderr: result.stderr ? decode(result.stderr) : null,
+            compile_output: result.compile_output ? decode(result.compile_output) : null,
+            time: result.time,
+            memory: result.memory,
         }));
 
-        res.status(201).send(processedResults);
+        let testCasesPassed = 0;
+        let runtime = 0;
+        let memory = 0;
+        let status = true;
+        let errorMessage = null;
+
+        for(const test of processedResults){
+            if(test.status_id==3){
+                testCasesPassed++;
+                runtime = runtime+parseFloat(test.time)
+                memory = Math.max(memory,test.memory);
+            }
+            else{
+                if(test.status_id==4){
+                    status = false
+                    errorMessage = test.stderr
+                }
+                else{
+                    status = false
+                    errorMessage = test.stderr
+                }
+            }
+        }
+
+        res.status(201).json({
+            success:status,
+            testCases: processedResults,
+            runtime: runtime * 1000,
+            memory: memory
+        });
     }
     catch(err){
         res.status(500).send("Error: "+err.message);

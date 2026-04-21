@@ -6,6 +6,7 @@ import {checkAuth} from './store/authSlice';
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import AdminPanel from "./pages/AdminPanel";
+import ProblemPage from "./pages/ProblemPage";
 
 function App(){
 
@@ -27,17 +28,18 @@ function App(){
   }
 
   // console.log(document.cookie);
-  console.log("User:", user);
-  console.log("Is Authenticated:", isAuthenticated);
-  console.log("role", user?.role);
+  // console.log("User:", user);
+  // console.log("Is Authenticated:", isAuthenticated);
+  // console.log("role", user?.role);
 
   return (<>
     <Routes>
       <Route path="/" element = {isAuthenticated ? <HomePage /> : <Navigate to='/login' /> }/>
       <Route path="/login" element = {isAuthenticated ? <Navigate to ='/' /> : <Login />} />
       <Route path="/signup" element = {isAuthenticated ? <Navigate to = '/' /> : <Signup />} />
-      <Route path="/admin" element = {<AdminPanel />} />
-      {/* <Route path="/admin" element= {isAuthenticated && user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/" /> } /> */}
+      <Route path="/admin" element= {isAuthenticated && user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/" /> } />
+      <Route path="/problem/:problemId" element = { <ProblemPage />} />
+      {/* <Route path="/admin" element = {<AdminPanel />} /> */}
     </Routes>
   </>)
 }

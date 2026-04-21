@@ -15,8 +15,8 @@ const register = async (req, res) => {
         req.body.role = "user";   //no one can become admin in this path
         const user = await User.create(req.body);
 
-        const token = jwt.sign({_id: user._id, emailId: emailId, role: 'user'}, process.env.JWT_KEY, {expiresIn: '1h'});
-        res.cookie ('token', token, {maxAge: 3600*1000});
+        const token = jwt.sign({_id: user._id, emailId: emailId, role: 'user'}, process.env.JWT_KEY, {expiresIn: '24h'});
+        res.cookie ('token', token, {maxAge: 86400*1000});
         res.status(200).json({
             message: 'User Registor Succesfully',
             user: {
@@ -47,8 +47,8 @@ const login = async (req, res) => {
 
         if(!match) throw new Error("Invalid Credentials");
 
-        const token = jwt.sign({_id: user._id, emailId: emailId, role: user.role}, process.env.JWT_KEY, {expiresIn: '1h'});
-        res.cookie ('token', token, {maxAge: 3600*1000});
+        const token = jwt.sign({_id: user._id, emailId: emailId, role: user.role}, process.env.JWT_KEY, {expiresIn: '24h'});
+        res.cookie ('token', token, {maxAge: 86400*1000});
 
         res.status(201).json({
             message: "Login Successful",

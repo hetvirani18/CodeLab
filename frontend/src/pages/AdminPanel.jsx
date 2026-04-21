@@ -6,10 +6,10 @@ import { useNavigate } from 'react-router';
 
 // Zod schema matching the problem schema
 const problemSchema = z.object({
-    title: z.string().min(1, 'Title is required'),
-    description: z.string().min(1, 'Description is required'),
-    difficulty: z.enum(['easy', 'medium', 'hard']),
-    tags: z.array(z.enum(['array', 'string', 'linkedlist', 'graph', 'dp'])),
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().min(1, 'Description is required'),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
+  tags: z.array(z.enum(['array', 'string', 'linkedlist', 'graph', 'dp'])).min(1, 'At least one tag is required'),
   visibleTestCases: z.array(
     z.object({
       input: z.string().min(1, 'Input is required'),
@@ -39,12 +39,8 @@ const problemSchema = z.object({
 
 function AdminPanel() {
   const navigate = useNavigate();
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors }
-  } = useForm({
+  
+  const { register, control, handleSubmit, formState: { errors }} = useForm({
     resolver: zodResolver(problemSchema),
     defaultValues: {
       startCode: [

@@ -60,6 +60,9 @@ function Homepage() {
         </div>
 
         <div className="flex-none gap-4">
+          {user?.role=='admin' && (
+            <NavLink to="/admin" className="btn btn-ghost">Admin Panel</NavLink>
+          )}
           <div className="dropdown dropdown-end">
             <div tabIndex={0} className="btn btn-ghost">
               {user?.firstName}
