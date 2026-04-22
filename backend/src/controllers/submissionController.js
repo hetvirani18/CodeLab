@@ -76,6 +76,11 @@ const submitCode = async (req, res) => {
             }
         }
 
+        submittedResult.status = status;
+        submittedResult.testCasesPassed = testCasesPassed;
+        submittedResult.runtime = runtime;
+        submittedResult.memory = memory;
+
         await submittedResult.save();
 
         //insert problem id in userSchema problemsolved if it is not present there

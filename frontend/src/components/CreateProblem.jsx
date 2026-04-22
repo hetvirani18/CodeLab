@@ -37,7 +37,7 @@ const problemSchema = z.object({
   ).length(3, 'All three languages required')
 });
 
-function AdminPanel() {
+function CreateProblem() {
   const navigate = useNavigate();
   
   const { register, control, handleSubmit, formState: { errors }} = useForm({
@@ -295,4 +295,4 @@ function AdminPanel() {
   );
 }
 
-export default AdminPanel;
+export default CreateProblem;

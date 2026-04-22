@@ -125,7 +125,7 @@ const solvedAllProblemsByUser = async (req, res) => {
 
 const submittedCode = async (req, res) => {
     try{
-        const id = req.result._id;
+        const userId = req.result._id;
         const problemId = req.params.pid;
         
         const ans = await Submission.find({userId, problemId});

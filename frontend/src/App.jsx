@@ -5,8 +5,11 @@ import Signup from "./pages/signup";
 import {checkAuth} from './store/authSlice';
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import AdminPanel from "./pages/AdminPanel";
+import AdminPanel from "./pages/Admin";
 import ProblemPage from "./pages/ProblemPage";
+import CreateProblem from './components/CreateProblem';
+import DeleteProblem from './components/DeleteProblem';
+import UpdateProblem from './components/UpdateProblem';
 
 function App(){
 
@@ -37,9 +40,12 @@ function App(){
       <Route path="/" element = {isAuthenticated ? <HomePage /> : <Navigate to='/login' /> }/>
       <Route path="/login" element = {isAuthenticated ? <Navigate to ='/' /> : <Login />} />
       <Route path="/signup" element = {isAuthenticated ? <Navigate to = '/' /> : <Signup />} />
-      <Route path="/admin" element= {isAuthenticated && user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/" /> } />
       <Route path="/problem/:problemId" element = { <ProblemPage />} />
-      {/* <Route path="/admin" element = {<AdminPanel />} /> */}
+
+      <Route path="/admin" element= {isAuthenticated && user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/" /> } />
+      <Route path="/admin/create" element= {isAuthenticated && user?.role === 'admin' ? <CreateProblem /> : <Navigate to="/" /> } />
+      <Route path="/admin/update" element= {isAuthenticated && user?.role === 'admin' ? <UpdateProblem /> : <Navigate to="/" /> } />
+      <Route path="/admin/delete" element= {isAuthenticated && user?.role === 'admin' ? <DeleteProblem /> : <Navigate to="/" /> } />
     </Routes>
   </>)
 }
