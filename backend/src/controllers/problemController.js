@@ -130,8 +130,6 @@ const submittedCode = async (req, res) => {
         
         const ans = await Submission.find({userId, problemId});
 
-        if(ans.length === 0) res.status(200).json({message: "No submission found for this problem"});
-
         res.status(200).json(ans);
     }
 

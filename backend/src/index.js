@@ -7,6 +7,7 @@ const authRouter = require('./routes/authRouter');
 const redisClient = require('./config/redis');
 const problemRouter = require('./routes/problemRouter');
 const submitRouter = require('./routes/submitRouter');
+const aiRouter = require('./routes/aiRouter');
 const {rateLimiter} = require('./middleware/rateLimiter');
 const cors = require('cors');
 
@@ -23,7 +24,7 @@ app.use(rateLimiter); // Apply the rate limiter middleware globally
 app.use('/user', authRouter);
 app.use('/problem', problemRouter);
 app.use('/submission', submitRouter);
-
+app.use('/ai', aiRouter);
 
 
 const initializeConnection = async () => {

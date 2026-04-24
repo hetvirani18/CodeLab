@@ -78,8 +78,8 @@ const submitCode = async (req, res) => {
 
         submittedResult.status = status;
         submittedResult.testCasesPassed = testCasesPassed;
-        submittedResult.runtime = runtime;
-        submittedResult.memory = memory;
+        submittedResult.runtime = (runtime).toFixed(2);
+        submittedResult.memory = (memory).toFixed(2);
 
         await submittedResult.save();
 
@@ -94,7 +94,7 @@ const submitCode = async (req, res) => {
             accepted,
             totalTestCases: submittedResult.testCasesTotal,
             passedTestCases: testCasesPassed,
-            runtime: runtime * 1000,
+            runtime: (runtime).toFixed(3),
             memory: memory
         });
     }
@@ -172,7 +172,7 @@ const runCode = async (req, res) => {
         res.status(201).json({
             success:status,
             testCases: processedResults,
-            runtime: runtime * 1000,
+            runtime: (runtime).toFixed(3),
             memory: memory
         });
     }
