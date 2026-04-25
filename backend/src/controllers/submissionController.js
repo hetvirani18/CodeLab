@@ -1,5 +1,6 @@
 const Problem = require('../models/problem');
 const Submission = require('../models/submission');
+const User = require('../models/user');
 const {getLanguageId, submitBatch, submitToken, encode, decode} = require('../utils/problemUtility');
 
 const submitCode = async (req, res) => {
@@ -84,9 +85,12 @@ const submitCode = async (req, res) => {
         await submittedResult.save();
 
         //insert problem id in userSchema problemsolved if it is not present there
-        if(!req.result.problemSolved.includes(problemId) && status=='accepted'){
-            req.result.problemSolved.push(problemId);
-            await req.result.save();
+        if(status=='accepted'){
+            await User.findByIdAndUpdate(
+                userId, 
+                {$addToSet: {problemSolved: problemId}},
+                { returnDocument: 'after', runValidators: true }
+            );
         }
 
         const accepted = (status == 'accepted')
@@ -99,6 +103,7 @@ const submitCode = async (req, res) => {
         });
     }
     catch(err){
+        console.error(err);
         res.status(500).send("Error: "+err.message);
     }
 }
