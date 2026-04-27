@@ -10,6 +10,8 @@ import ProblemPage from "./pages/ProblemPage";
 import CreateProblem from './components/CreateProblem';
 import DeleteProblem from './components/DeleteProblem';
 import UpdateProblem from './components/UpdateProblem';
+import AdminVideo from "./components/AdminVideo";
+import VideoUpload from "./components/VideoUpload";
 
 function App(){
 
@@ -46,6 +48,8 @@ function App(){
       <Route path="/admin/create" element= {isAuthenticated && user?.role === 'admin' ? <CreateProblem /> : <Navigate to="/" /> } />
       <Route path="/admin/update" element= {isAuthenticated && user?.role === 'admin' ? <UpdateProblem /> : <Navigate to="/" /> } />
       <Route path="/admin/delete" element= {isAuthenticated && user?.role === 'admin' ? <DeleteProblem /> : <Navigate to="/" /> } />
+      <Route path="/admin/video" element= {isAuthenticated && user?.role === 'admin' ? <AdminVideo /> : <Navigate to="/" /> } />
+      <Route path="/admin/upload/:problemId" element= {isAuthenticated && user?.role === 'admin' ? <VideoUpload /> : <Navigate to="/" /> } />
     </Routes>
   </>)
 }

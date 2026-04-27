@@ -2,6 +2,7 @@ const {getLanguageId, submitBatch, submitToken, getJudgeError, testCode} = requi
 const Problem = require('../models/problem');
 const User = require('../models/user');
 const Submission = require('../models/submission');
+const solutionVideo = require('../models/solutionVideo');
 
 const createProblem = async (req, res) => {
     try{
@@ -80,8 +81,20 @@ const getProblemById = async (req, res) => {
         if(!id) return res.status(400).send("Error: ID Missing");
 
         const getProblem = await Problem.findById(id).select('title description difficulty tags visibleTestCases startCode referenceSolution ');
-
+                
         if(!getProblem) return res.status(404).send("Problem is missing");
+        
+        const video = await solutionVideo.findOne({problemId: id});       
+        
+        if(video){
+            getProblem.secureUrl = video.secureUrl;
+            getProblem.cloudinaryPublicId = video.cloudinaryPublicId;
+            getProblem.thumbnailUrl = video.thumbnailUrl;
+            getProblem.duration = video.duration;
+
+            return res.status(200).send(getProblem);
+        }
+        
         res.status(200).send(getProblem);
     }
     catch(err){

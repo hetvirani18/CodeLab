@@ -8,6 +8,7 @@ const redisClient = require('./config/redis');
 const problemRouter = require('./routes/problemRouter');
 const submitRouter = require('./routes/submitRouter');
 const aiRouter = require('./routes/aiRouter');
+const videoRouter = require('./routes/videoRouter');
 const {rateLimiter} = require('./middleware/rateLimiter');
 const cors = require('cors');
 
@@ -25,7 +26,7 @@ app.use('/user', authRouter);
 app.use('/problem', problemRouter);
 app.use('/submission', submitRouter);
 app.use('/ai', aiRouter);
-
+app.use('/video', videoRouter);
 
 const initializeConnection = async () => {
     try{
