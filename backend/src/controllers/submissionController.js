@@ -82,16 +82,31 @@ const submitCode = async (req, res) => {
         submittedResult.runtime = (runtime).toFixed(2);
         submittedResult.memory = (memory).toFixed(2);
 
-        await submittedResult.save();
+        const databaseTasks = [
+            submittedResult.save(),
+            Problem.findByIdAndUpdate(
+                problemId,
+                {
+                    $inc: {
+                        totalSubmissions: 1,
+                        acceptedSubmissions: status=='accepted' ? 1 : 0
+                    }
+                }
+            ).exec()
+        ]
 
         //insert problem id in userSchema problemsolved if it is not present there
         if(status=='accepted'){
-            await User.findByIdAndUpdate(
-                userId, 
-                {$addToSet: {problemSolved: problemId}},
-                { returnDocument: 'after', runValidators: true }
+            databaseTasks.push(
+                User.findByIdAndUpdate(
+                    userId, 
+                    {$addToSet: {problemSolved: problemId}},
+                ).exec()
             );
         }
+
+        await Promise.all(databaseTasks);
+
 
         const accepted = (status == 'accepted')
         res.status(201).json({

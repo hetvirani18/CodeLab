@@ -1,5 +1,5 @@
 import {Routes, Route, Navigate } from "react-router";
-import HomePage from "./pages/HomePage";
+import Problemset from "./pages/Problemset";
 import Login from "./pages/Login";
 import Signup from "./pages/signup";
 import {checkAuth} from './store/authSlice';
@@ -12,6 +12,7 @@ import DeleteProblem from './components/DeleteProblem';
 import UpdateProblem from './components/UpdateProblem';
 import AdminVideo from "./components/AdminVideo";
 import VideoUpload from "./components/VideoUpload";
+import Home from "./pages/Home";
 
 function App(){
 
@@ -39,7 +40,8 @@ function App(){
 
   return (<>
     <Routes>
-      <Route path="/" element = {isAuthenticated ? <HomePage /> : <Navigate to='/login' /> }/>
+      <Route path="/" element = {<Home />}/>
+      <Route path="problemset" element = {isAuthenticated ? <Problemset /> : <Navigate to='/login' /> } />
       <Route path="/login" element = {isAuthenticated ? <Navigate to ='/' /> : <Login />} />
       <Route path="/signup" element = {isAuthenticated ? <Navigate to = '/' /> : <Signup />} />
       <Route path="/problem/:problemId" element = { <ProblemPage />} />

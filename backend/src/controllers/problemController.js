@@ -80,7 +80,7 @@ const getProblemById = async (req, res) => {
     try{
         if(!id) return res.status(400).send("Error: ID Missing");
 
-        const getProblem = await Problem.findById(id).select('title description difficulty tags visibleTestCases startCode referenceSolution ');
+        const getProblem = await Problem.findById(id).select('title description difficulty tags visibleTestCases startCode referenceSolution acceptedSubmissions totalSubmissions');
                 
         if(!getProblem) return res.status(404).send("Problem is missing");
         
@@ -109,7 +109,7 @@ const getAllProblems = async (req, res) => {
         const page = Math.max(1, parseInt(req.query.page) || 1);
         const limit = 10;
         const skipValue = (page - 1) * limit;
-        const problems = await Problem.find({}).skip(skipValue).limit(limit).select("title difficulty tags");
+        const problems = await Problem.find({}).skip(skipValue).limit(limit).select("title difficulty tags totalSubmissions acceptedSubmissions");
         const totalProblems = await Problem.countDocuments();
         res.status(200).json({
             totalProblems,
@@ -127,7 +127,7 @@ const solvedAllProblemsByUser = async (req, res) => {
     try{
         const user = await User.findById(req.result._id).populate({
             path: 'problemSolved',
-            select: 'title difficulty tags'
+            select: 'title difficulty tags totalSubmissions acceptedSubmissions'
         });
 
         res.status(200).send(user.problemSolved);

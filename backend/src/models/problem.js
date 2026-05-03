@@ -73,6 +73,14 @@ const problemSchema = new Schema({
             }
         }
     ],
+    totalSubmissions: {
+        type: Number,
+        default: 0,
+    },
+    acceptedSubmissions: {
+        type: Number,
+        default: 0,
+    },
     problemCreator: {
         type: Schema.Types.ObjectId,
         ref: 'user',
