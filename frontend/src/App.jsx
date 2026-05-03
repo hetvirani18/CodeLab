@@ -13,6 +13,7 @@ import UpdateProblem from './components/UpdateProblem';
 import AdminVideo from "./components/AdminVideo";
 import VideoUpload from "./components/VideoUpload";
 import Home from "./pages/Home";
+import { Toaster } from "react-hot-toast";
 
 function App(){
 
@@ -39,6 +40,21 @@ function App(){
   // console.log("role", user?.role);
 
   return (<>
+    <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#1e2530',
+            color: '#e6edf3',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '10px',
+            fontSize: '14px',
+            fontFamily: 'Sora, sans-serif',
+          },
+          success: { iconTheme: { primary: '#00e676', secondary: '#0d1117' } },
+          error:   { iconTheme: { primary: '#ff5555', secondary: '#0d1117' } },
+        }}
+      />
     <Routes>
       <Route path="/" element = {<Home />}/>
       <Route path="problemset" element = {isAuthenticated ? <Problemset /> : <Navigate to='/login' /> } />
