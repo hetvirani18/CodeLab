@@ -95,7 +95,7 @@ export default function LiveCode() {
   const { lines, isTyping, isRunning, isAccepted } = useLiveCoding();
 
   return (
-    <div className="hidden lg:flex flex-1 flex-col p-12 relative overflow-hidden border-r border-base-content/[0.07]">
+    <div className="hidden lg:flex flex-1 flex-col justify-between p-12 relative overflow-hidden border-r border-base-content/[0.07]">
 
       {/* Grid */}
       <div className="absolute inset-0 pointer-events-none" style={{
@@ -121,7 +121,7 @@ export default function LiveCode() {
       </NavLink>
 
       {/* Code editor card */}
-      <div className="relative z-10 mt-50 max-w-200">
+      <div className="relative z-10 max-w-200">
         <motion.div
           className="rounded-2xl border overflow-hidden bg-base-200 transition-shadow duration-700"
           animate={{
@@ -214,6 +214,8 @@ export default function LiveCode() {
           ))}
         </div>
       </div>
+
+      <div />
     </div>
   );
 }
