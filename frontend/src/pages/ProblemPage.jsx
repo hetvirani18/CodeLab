@@ -6,6 +6,8 @@ import axiosClient from "../utils/axiosClient"
 import SubmissionHistory from '../components/SubmissionHistory';
 import ChatAI from '../components/ChatAI';
 import Editorial from '../components/Editorial';
+import { useDispatch } from 'react-redux';
+import { fetchUserActivity } from '../store/activitySlice';
 
 const languageMap = {
   'c++': 'cpp',
@@ -94,6 +96,8 @@ const ProblemPage = () => {
     }
   };
 
+  const dispatch = useDispatch();
+
   const handleSubmitCode = async () => {
     setLoading(true);
     setSubmitResult(null);
@@ -104,9 +108,12 @@ const ProblemPage = () => {
         language: selectedLanguage
       });
 
-       setSubmitResult(response.data);
-       setLoading(false);
-       setActiveRightTab('result');
+      setSubmitResult(response.data);
+      setLoading(false);
+      setActiveRightTab('result');
+      if(response.data.accepted){
+        dispatch(fetchUserActivity());
+      }
       
     } catch (error) {
       console.error('Error submitting code:', error);

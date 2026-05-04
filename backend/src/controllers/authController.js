@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const redisClient = require('../config/redis');
 const Submission = require('../models/submission');
 const cloudinary = require('cloudinary').v2;
+const mongoose = require('mongoose');
 
 const register = async (req, res) => {
     try{
@@ -176,4 +177,92 @@ const updateProfile = async (req, res) => {
     }
 }
 
-module.exports = {register, login, logout, getProfile, adminRegistor, deleteProfile, updateProfile};
+function calculateStreak(heatmap) {
+  const dates = Object.keys(heatmap).sort();
+  let streak = 0;
+
+  let current = new Date();
+  current.setHours(0, 0, 0, 0);
+
+  for (let i = dates.length - 1; i >= 0; i--) {
+    const d = new Date(dates[i]);
+    d.setHours(0, 0, 0, 0);
+
+    const diff = Math.floor((current - d) / (1000 * 60 * 60 * 24));
+
+    if (diff === 0 || diff === 1) {
+      streak++;
+      current = d;
+    } else if (diff > 1) {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+const getUserActivity = async (req, res) => {
+  try {
+    const userId = req.result._id;
+
+    const data = await Submission.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          status: "accepted"
+        }
+      },
+
+      // unique problem per day
+      {
+        $group: {
+          _id: {
+            problemId: "$problemId",
+            date: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$createdAt"
+              }
+            }
+          }
+        }
+      },
+
+      // count per day
+      {
+        $group: {
+          _id: "$_id.date",
+          count: { $sum: 1 }
+        }
+      },
+
+      { $sort: { _id: 1 } }
+    ]);
+
+    // format
+    const heatmap = {};
+    data.forEach(d => {
+      heatmap[d._id] = d.count;
+    });
+
+    // streak
+    const streak = calculateStreak(heatmap);
+
+    const today = new Date().toLocaleDateString('en-CA');
+
+    const todaySolved = !!heatmap[today];
+    console.log("activity: ", heatmap, streak, todaySolved);
+
+    res.json({
+      heatmap,
+      streak,
+      todaySolved
+    });
+
+  } catch (err) {
+    console.log("Error in getUserActivity: ", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = {register, login, logout, getProfile, adminRegistor, deleteProfile, updateProfile, getUserActivity};

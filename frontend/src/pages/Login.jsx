@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
 import LiveCode from '../components/LiveCode';
+import {fetchUserActivity} from '../store/activitySlice';
 
 const loginSchema = z.object({
   emailId: z.string().email('Invalid Email'),
@@ -47,7 +48,10 @@ function Login() {
   const onSubmit = (data) => {
     dispatch(loginUser(data))
       .unwrap()
-      .then(() => toast.success("Logged in successfully"))
+      .then(() => {
+        toast.success("Logged in successfully");
+        dispatch(fetchUserActivity());
+      })
       .catch((err) => toast.error(err?.message || "Login failed"));
   };
 

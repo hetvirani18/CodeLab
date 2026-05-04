@@ -14,6 +14,7 @@ import AdminVideo from "./components/AdminVideo";
 import VideoUpload from "./components/VideoUpload";
 import Home from "./pages/Home";
 import { Toaster } from "react-hot-toast";
+import {fetchUserActivity} from './store/activitySlice';
 
 function App(){
 
@@ -23,7 +24,9 @@ function App(){
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(checkAuth());
+    dispatch(checkAuth())
+      .unwrap()
+      .then(() => dispatch(fetchUserActivity()));
   }, [dispatch]);  //you can also leave empty array dispatch will not change so its same
   
   if (loading) {
