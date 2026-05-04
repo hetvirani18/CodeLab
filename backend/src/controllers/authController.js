@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const redisClient = require('../config/redis');
 const Submission = require('../models/submission');
+const cloudinary = require('cloudinary').v2;
 
 const register = async (req, res) => {
     try{
@@ -134,4 +135,45 @@ const deleteProfile = async(req, res) => {
     }
 }
 
-module.exports = {register, login, logout, getProfile, adminRegistor, deleteProfile};
+const updateProfile = async (req, res) => {
+    try{
+        const userId = req.result._id;
+        const user = req.result;
+        const {profilePic, firstName, lastName} = req.body;
+        if(!profilePic && !firstName && !lastName) return res.status(400).json({message: "At least one field is required to update"});
+        
+        const updateData = {};
+        
+        if (profilePic) {
+            if (user.profilePic?.public_id) {
+                await cloudinary.uploader.destroy(user.profilePic.public_id);
+            }
+
+            const uploadResponse = await cloudinary.uploader.upload(profilePic, {
+                folder: "profilePics",
+                public_id: userId,
+            });
+
+            updateData.profilePic = {
+                url: uploadResponse.secure_url,
+                public_id: uploadResponse.public_id,
+            };
+        }
+
+        if(firstName) updateData.firstName = firstName;
+        if(lastName) updateData.lastName = lastName;
+        const updatedUser = await User.findByIdAndUpdate(
+            userId, 
+            updateData, 
+            {returnDocument: 'after'}
+        );
+
+        res.status(200).json({updatedUser});
+
+    }
+    catch(err){
+        res.status(500).json({message: "Error: "+err.message});
+    }
+}
+
+module.exports = {register, login, logout, getProfile, adminRegistor, deleteProfile, updateProfile};

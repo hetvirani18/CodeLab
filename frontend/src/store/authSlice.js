@@ -9,7 +9,7 @@ export const registerUser = createAsyncThunk(
       return response.data.user;
     } 
     catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data || error);
     }
   }
 );
@@ -22,7 +22,7 @@ export const loginUser = createAsyncThunk(
       const response = await axiosClient.post('/user/login', credentials);
       return response.data.user;
     } catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data || error);
     }
   }
 );
@@ -34,7 +34,7 @@ export const checkAuth = createAsyncThunk(
       const { data } = await axiosClient.get('/user/check');
       return data.user;
     } catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data || error);
     }
   }
 );
@@ -46,7 +46,19 @@ export const logoutUser = createAsyncThunk(
       await axiosClient.post('/user/logout');
       return null;
     } catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data || error);
+    }
+  }
+);
+
+export const updateProfile = createAsyncThunk(
+  'auth/updateProfile',
+  async (updatedData, { rejectWithValue }) => {
+    try {
+      const response = await axiosClient.put('/user/update-profile', updatedData);
+      return response.data.updatedUser;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error);
     }
   }
 );
@@ -130,6 +142,20 @@ const authSlice = createSlice({
         state.error = action.payload?.message || 'Something went wrong';
         state.isAuthenticated = false;
         state.user = null;
+      })
+
+      // Update Profile Cases
+      .addCase(updateProfile.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Something went wrong';
       });
   }
 });

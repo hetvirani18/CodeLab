@@ -60,16 +60,17 @@ export default function Navbar() {
           <div className="navbar-end">
             <div className="dropdown dropdown-end">
               <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                <div className="w-9 rounded-full bg-green-500 text-black flex items-center justify-center font-bold">
-                  {user?.name?.[0] || "U"}
+                <div className="w-9 rounded-full flex items-center justify-center overflow-hidden">
+                  <img
+                    src={user?.profilePic?.url || "/avatar.png"}
+                    alt="profile"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </label>
 
               <ul className="menu menu-sm dropdown-content mt-3 p-2 shadow bg-base-200 rounded-box w-40">
                 <li><NavLink to="/profile">Profile</NavLink></li>
-                {user?.role === "admin" && (
-                  <li><NavLink to="/admin">Admin Panel</NavLink></li>
-                )}
                 <li>
                   <button onClick={handleLogout}>Logout</button>
                 </li>
