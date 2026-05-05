@@ -9,6 +9,7 @@ import SkeletonRow from '../components/Skeletons/SkeletonRow';
 import FiltersBar from '../components/FiltersBar';
 import Pagination from '../components/Pagination';
 import { TAG_FILTER_ALL } from '../utils/constant';
+import Footer from '../components/Footer';
 
 export default function ProblemSet() {
   const dispatch = useDispatch();
@@ -152,7 +153,7 @@ export default function ProblemSet() {
               {/* Toggle button - visible on all screens */}
               <button
                 onClick={() => setShowActivity(!showActivity)}
-                className="w-full mb-3 py-2 rounded-lg border border-base-content/8 bg-base-200 
+                className="w-full mb-3 py-2 rounded-lg border border-base-content/8 bg-base-300/80 
                           text-sm font-mono text-base-content/60 hover:text-green-400 
                           transition-colors flex items-center justify-center gap-1"
               >
@@ -165,6 +166,9 @@ export default function ProblemSet() {
           </div>
         </div>
       </div>
+      
+      <Footer />
+
     </div>
   );
 }

@@ -1,0 +1,53 @@
+const getDifficultyColor = (difficulty) => {
+  switch (difficulty) {
+    case 'easy':
+      return 'text-green-500';
+    case 'medium':
+      return 'text-yellow-500';
+    case 'hard':
+      return 'text-red-500';
+    default:
+      return 'text-gray-500';
+  }
+};
+
+export default function DescriptionPanel({ problem }) {
+  return (
+    <div>
+      <div className="flex items-center gap-4 mb-6">
+        <h1 className="text-2xl font-bold">{problem.title}</h1>
+        <div className={`badge badge-outline ${getDifficultyColor(problem.difficulty)}`}>
+          {problem.difficulty.charAt(0).toUpperCase() + problem.difficulty.slice(1)}
+        </div>
+        {problem.tags &&
+          problem.tags.map((tag, index) => (
+            <div className="badge badge-outline" key={index}>
+              {tag}
+            </div>
+          ))}
+      </div>
+
+      <div className="prose max-w-none">
+        <div className="whitespace-pre-wrap text-sm leading-relaxed">
+          {problem.description}
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-4">Examples:</h3>
+        <div className="space-y-4">
+          {problem.visibleTestCases?.map((example, index) => (
+            <div key={index} className="bg-base-200 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">Example {index + 1}:</h4>
+              <div className="space-y-2 text-sm font-mono">
+                <div><strong>Input:</strong> {example.input}</div>
+                <div><strong>Output:</strong> {example.output}</div>
+                <div><strong>Explanation:</strong> {example.explanation}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

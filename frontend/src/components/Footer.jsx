@@ -63,7 +63,7 @@ export default function Footer() {
           transition={{ duration: 0.5 }}
           className="font-mono text-xl font-bold"
         >
-          code<span style={{ color: "var(--green)" }}>Lab</span>
+          code<span className="text-green-400">Lab</span>
         </motion.div>
 
         {/* Copyright */}
@@ -112,7 +112,7 @@ export default function Footer() {
                 title={s.label}
                 initial={{ opacity: 0, scale: 0.7 }}
                 animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ delay: 0.2 + i * 0.07, duration: 0.3 }}
+                transition={{ duration: 0.2 }}
                 whileHover={{ scale: 1.15, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 className="w-8 h-8 rounded-lg bg-base-200 border border-base-content/8
