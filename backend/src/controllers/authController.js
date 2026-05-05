@@ -177,25 +177,26 @@ const updateProfile = async (req, res) => {
     }
 }
 
-function calculateStreak(heatmap) {
-  const dates = Object.keys(heatmap).sort();
+const TIME_ZONE = 'Asia/Kolkata';
+
+function formatDateInTimeZone(date, timeZone = TIME_ZONE) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone }).format(date);
+}
+
+function getPreviousDate(dateStr) {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() - 1);
+  return date.toISOString().slice(0, 10);
+}
+
+function calculateStreak(heatmap, todayStr) {
   let streak = 0;
+  let cursor = heatmap[todayStr] ? todayStr : getPreviousDate(todayStr);
 
-  let current = new Date();
-  current.setHours(0, 0, 0, 0);
-
-  for (let i = dates.length - 1; i >= 0; i--) {
-    const d = new Date(dates[i]);
-    d.setHours(0, 0, 0, 0);
-
-    const diff = Math.floor((current - d) / (1000 * 60 * 60 * 24));
-
-    if (diff === 0 || diff === 1) {
-      streak++;
-      current = d;
-    } else if (diff > 1) {
-      break;
-    }
+  while (heatmap[cursor]) {
+    streak++;
+    cursor = getPreviousDate(cursor);
   }
 
   return streak;
@@ -221,7 +222,8 @@ const getUserActivity = async (req, res) => {
             date: {
               $dateToString: {
                 format: "%Y-%m-%d",
-                date: "$createdAt"
+                date: "$createdAt",
+                timezone: TIME_ZONE
               }
             }
           }
@@ -246,17 +248,18 @@ const getUserActivity = async (req, res) => {
     });
 
     // streak
-    const streak = calculateStreak(heatmap);
-
-    const today = new Date().toLocaleDateString('en-CA');
-
+    const today = formatDateInTimeZone(new Date());
     const todaySolved = !!heatmap[today];
-    console.log("activity: ", heatmap, streak, todaySolved);
+    const streak = calculateStreak(heatmap, today);
+
+    const user = await User.findById(userId).select('problemSolved');
+    const totalSolved = user?.problemSolved?.length || 0;
 
     res.json({
       heatmap,
       streak,
-      todaySolved
+      todaySolved,
+      totalSolved
     });
 
   } catch (err) {

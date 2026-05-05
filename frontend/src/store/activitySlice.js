@@ -19,6 +19,7 @@ const activitySlice = createSlice({
     heatmap: {},
     streak: 0,
     todaySolved: false,
+    totalSolved: 0,
     loading: false,
     error: null
   },
@@ -34,6 +35,7 @@ const activitySlice = createSlice({
         state.heatmap = action.payload.heatmap;
         state.streak = action.payload.streak;
         state.todaySolved = action.payload.todaySolved;
+        state.totalSolved = action.payload.totalSolved || 0;
       })
       .addCase(fetchUserActivity.rejected, (state, action) => {
         state.loading = false;

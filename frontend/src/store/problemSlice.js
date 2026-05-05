@@ -1,0 +1,47 @@
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import axiosClient from '../utils/axiosClient';
+
+export const fetchProblems = createAsyncThunk(
+  'problems/fetch',
+  async (page = 1, { rejectWithValue }) => {
+    try {
+      const { data } = await axiosClient.get(`/problem/getAllProblems?page=${page}`);
+      return data; // { totalProblems, totalPages, currentPage, problems }
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+const problemsSlice = createSlice({
+  name: 'problems',
+  initialState: {
+    list: [],
+    totalProblems: 0,
+    totalPages: 1,
+    currentPage: 1,
+    loading: false,
+    error: null,
+  },
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchProblems.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchProblems.fulfilled, (state, action) => {
+        state.loading = false;
+        state.list = action.payload.problems;
+        state.totalProblems = action.payload.totalProblems;
+        state.totalPages = action.payload.totalPages;
+        state.currentPage = action.payload.currentPage;
+      })
+      .addCase(fetchProblems.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to load problems';
+      });
+  },
+});
+
+export default problemsSlice.reducer;

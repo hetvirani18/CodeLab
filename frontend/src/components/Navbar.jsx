@@ -5,6 +5,7 @@ import { logoutUser } from "../store/authSlice";
 import { fetchUserActivity } from "../store/activitySlice";
 import { NavLink, useNavigate } from "react-router";
 import StreakBadge from "./StreakBadge";
+import { motion } from "motion/react";
 
 export default function Navbar() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
