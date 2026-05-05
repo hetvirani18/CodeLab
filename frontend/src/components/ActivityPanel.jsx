@@ -47,7 +47,7 @@ export default function ActivityPanel() {
   };
 
   return (
-    <div className="hidden lg:flex flex-col gap-4 min-w-70 mt-20 ">
+    <div className="min-w-70 ">
 
       {/* ── This month heatmap ── */}
       <div className="rounded-xl border border-base-content/8 bg-base-300/80 p-5">
