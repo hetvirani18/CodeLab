@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import axiosClient from '../../utils/axiosClient';
 import { useParams } from 'react-router';
+import Editor from '@monaco-editor/react';
+
+const getMonacoLang = (lang) => (lang === 'c++' ? 'cpp' : lang);
 
 const SubmissionHistory = () => {
 
@@ -31,11 +34,11 @@ const SubmissionHistory = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'accepted': return 'badge-success';
-      case 'wrong': return 'badge-error';
-      case 'error': return 'badge-warning';
-      case 'pending': return 'badge-info';
-      default: return 'badge-neutral';
+      case 'accepted': return 'bg-green-500/10 text-green-400';
+      case 'wrong': return 'bg-red-500/10 text-red-400';
+      case 'error': return 'bg-yellow-500/10 text-yellow-400';
+      case 'pending': return 'bg-blue-500/10 text-blue-400';
+      default: return 'bg-gray-500/10 text-gray-400';
     }
   };
 
@@ -70,37 +73,42 @@ const SubmissionHistory = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-bold mb-6 text-center">Submission History</h2>
+    <div className="p-5">
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <p className="font-mono text-xs text-base-content/30 uppercase tracking-widest">My Submissions</p>
+          <h2 className="text-lg font-semibold text-base-content/80">Submission History</h2>
+        </div>
+        <span className="font-mono text-xs text-base-content/35">
+          {submissions.length} total
+        </span>
+      </div>
       
       {submissions.length === 0 ? (
-        <div className="alert alert-info shadow-lg">
-          <div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            <span>No submissions found for this problem</span>
-          </div>
+        <div className="rounded-xl border border-base-content/10 bg-base-200 p-6 text-center">
+          <div className="text-3xl mb-2">📭</div>
+          <p className="font-medium text-base-content/70">No submissions yet</p>
+          <p className="text-sm text-base-content/35">Submit your code to see it here.</p>
         </div>
       ) : (
         <>
-          <div className="overflow-x-auto">
-            <table className="table table-zebra w-full">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Language</th>
-                  <th>Status</th>
-                  <th>Runtime</th>
-                  <th>Memory</th>
-                  <th>Test Cases</th>
-                  <th>Submitted</th>
-                  <th>Actions</th>
+          <div className="overflow-x-auto rounded-xl border border-base-content/10">
+            <table className="table w-full">
+              <thead className="bg-base-200">
+                <tr className="text-xs uppercase tracking-widest text-base-content/40">
+                  <th className="font-medium">#</th>
+                  <th className="font-medium">Language</th>
+                  <th className="font-medium">Status</th>
+                  <th className="font-medium">Runtime</th>
+                  <th className="font-medium">Memory</th>
+                  <th className="font-medium">Test Cases</th>
+                  <th className="font-medium">Submitted</th>
+                  <th className="font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {submissions.map((sub, index) => (
-                  <tr key={sub._id}>
+                  <tr key={sub._id} className="hover:bg-base-200/40">
                     <td>{index + 1}</td>
                     <td className="font-mono">{sub.language}</td>
                     <td>
@@ -109,13 +117,13 @@ const SubmissionHistory = () => {
                       </span>
                     </td>
                     
-                    <td className="font-mono">{sub.runtime}sec</td>
+                    <td className="font-mono">{sub.runtime}s</td>
                     <td className="font-mono">{formatMemory(sub.memory)}</td>
                     <td className="font-mono">{sub.testCasesPassed}/{sub.testCasesTotal}</td>
                     <td>{formatDate(sub.createdAt)}</td>
                     <td>
                       <button 
-                        className="btn btn-s btn-outline"
+                        className="btn btn-xs btn-outline font-mono"
                         onClick={() => setSelectedSubmission(sub)}
                       >
                         Code
@@ -127,7 +135,7 @@ const SubmissionHistory = () => {
             </table>
           </div>
 
-          <p className="mt-4 text-sm text-gray-500">
+          <p className="mt-4 text-xs font-mono text-base-content/35">
             Showing {submissions.length} submissions
           </p>
         </>
@@ -136,8 +144,8 @@ const SubmissionHistory = () => {
       {/* Code View Modal */}
       {selectedSubmission && (
         <div className="modal modal-open">
-          <div className="modal-box w-11/12 max-w-5xl">
-            <h3 className="font-bold text-lg mb-4">
+          <div className="modal-box w-11/12 max-w-5xl bg-base-100 border border-base-content/10">
+            <h3 className="font-semibold text-base mb-4">
               Submission Details: {selectedSubmission.language}
             </h3>
             
@@ -146,33 +154,45 @@ const SubmissionHistory = () => {
                 <span className={`badge ${getStatusColor(selectedSubmission.status)}`}>
                   {selectedSubmission.status}
                 </span>
-                <span className="badge badge-outline">
+                <span className="badge badge-outline font-mono">
                   Runtime: {selectedSubmission.runtime}s
                 </span>
-                <span className="badge badge-outline">
+                <span className="badge badge-outline font-mono">
                   Memory: {formatMemory(selectedSubmission.memory)}
                 </span>
-                <span className="badge badge-outline">
+                <span className="badge badge-outline font-mono">
                   Passed: {selectedSubmission.testCasesPassed}/{selectedSubmission.testCasesTotal}
                 </span>
               </div>
               
               {selectedSubmission.errorMessage && (
-                <div className="alert alert-error mt-2">
-                  <div>
-                    <span>{selectedSubmission.errorMessage}</span>
-                  </div>
+                <div className="mb-3 rounded-lg border border-red-500/25 bg-red-500/5 px-3 py-2 text-sm font-mono text-red-300">
+                  {selectedSubmission.errorMessage}
                 </div>
               )}
             </div>
             
-            <pre className="p-4 bg-gray-900 text-gray-100 rounded overflow-x-auto">
-              <code>{selectedSubmission.code}</code>
-            </pre>
+            <div className="rounded-xl border border-base-content/10 overflow-hidden">
+              <Editor
+                height="520px"
+                language={getMonacoLang(selectedSubmission.language.toLowerCase())}
+                value={selectedSubmission.code}
+                theme="vs-dark"
+                options={{
+                  readOnly: true,
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  wordWrap: 'on',
+                  lineNumbers: 'on',
+                  renderLineHighlight: 'none',
+                }}
+              />
+            </div>
             
             <div className="modal-action">
               <button 
-                className="btn"
+                className="btn btn-sm btn-ghost border border-base-content/10 font-mono"
                 onClick={() => setSelectedSubmission(null)}
               >
                 Close

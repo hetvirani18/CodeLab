@@ -116,24 +116,11 @@ export default function LeftPanel() {
             )}
 
             {activeLeftTab === 'submissions' && (
-              <div>
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-base font-semibold">My Submissions</h2>
-                </div>
-                <SubmissionHistory />
-              </div>
+              <SubmissionHistory />
             )}
 
             {activeLeftTab === 'chatAI' && (
-              <div>
-                <div className="flex items-center gap-2 mb-5">
-                  <h2 className="text-base font-semibold">AI Assistant</h2>
-                  <span className="badge badge-sm rounded-md border-none bg-green-500/10 text-green-400 font-mono">
-                    beta
-                  </span>
-                </div>
-                <ChatAI />
-              </div>
+              <ChatAI />
             )}
 
             {activeLeftTab === SUBMIT_TAB_ID && (
