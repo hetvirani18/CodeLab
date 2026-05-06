@@ -1,330 +1,365 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Editor from '@monaco-editor/react';
+import { clearResults } from '../../store/porblemDetailSlice';
 
-const getMonacoLang = (lang) => lang === 'c++' ? 'cpp' : lang;
-
+const getMonacoLang = (lang) => (lang === 'c++' ? 'cpp' : lang);
 const LANG_LABELS = { javascript: 'JavaScript', java: 'Java', 'c++': 'C++' };
+const CONSOLE_BAR_H  = 44;
+const CONSOLE_OPEN_H = 350;
+const TOOLBAR_H      = 44;
 
-// ── Testcase result card ──
-function TestCaseCard({ tc, index }) {
-  const passed = tc.status_id === 3;
+// ─────────────────────────────────────────
+// Field box — input / expected / output
+// ─────────────────────────────────────────
+function FieldBox({ label, value, highlight }) {
   return (
-    <div className={`rounded-lg border p-3 text-xs font-mono
-      ${passed
-        ? 'bg-green-500/5 border-green-500/20'
-        : 'bg-red-500/5 border-red-500/20'
-      }`}
-    >
-      <div className="flex items-center justify-between mb-2">
-        <span className="font-semibold text-base-content/60">Case {index + 1}</span>
-        <span className={passed ? 'text-green-400' : 'text-red-400'}>
-          {passed ? '✓ Passed' : '✗ Failed'}
-        </span>
-      </div>
-      <div className="flex flex-col gap-1 text-base-content/50">
-        <div><span className="text-base-content/30">Input:</span> {tc.stdin}</div>
-        <div><span className="text-base-content/30">Expected:</span> {tc.expected_output}</div>
-        <div><span className="text-base-content/30">Output:</span> {tc.stdout || '—'}</div>
+    <div>
+      <p className="font-mono text-[11px] text-base-content/35 mb-1">{label}</p>
+      <div
+        className={`rounded-lg px-3 py-2.5 font-mono text-xs border whitespace-pre-wrap break-all
+          ${highlight === 'pass'
+            ? 'bg-green-500/5 border-green-500/20 text-green-300'
+            : highlight === 'fail'
+            ? 'bg-red-500/5 border-red-500/20 text-red-300'
+            : 'bg-base-100 border-base-content/8 text-base-content/70'
+          }`}
+      >
+        {value || <span className="text-base-content/25">—</span>}
       </div>
     </div>
   );
 }
 
-// ── Run result panel ──
-function TestcasePanel({ runResult }) {
+// ─────────────────────────────────────────
+// Console content
+// ─────────────────────────────────────────
+function ConsoleContent({ problem, runResult, loadingAction }) {
   const [activeCase, setActiveCase] = useState(0);
 
-  useEffect(() => {
-    setActiveCase(0);
-  }, [runResult]);
+  useEffect(() => { setActiveCase(0); }, [runResult]);
 
-  if (!runResult) {
+  // Loading spinner
+  if (loadingAction === 'run') {
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex items-center gap-3 border-b border-base-content/7 pb-2">
-          <button className="px-2.5 py-1 rounded-md text-xs font-mono bg-base-100 border border-base-content/12">Testcase</button>
-          <button className="px-2.5 py-1 rounded-md text-xs font-mono text-base-content/40 border border-transparent">Test Result</button>
+      <div className="flex items-center gap-2 h-full text-base-content/30 font-mono text-xs">
+        <span className="loading loading-spinner loading-xs" />
+        Running test cases…
+      </div>
+    );
+  }
+
+  // ── After run: show results ──
+  if (runResult) {
+    const cases   = runResult.testCases || [];
+    const current = cases[activeCase] || {};
+    const passed  = current.status_id === 3;
+
+    return (
+      <div className="flex flex-col gap-2.5 h-full ">
+        {/* Header row */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className={`font-mono text-xs font-semibold ${runResult.success ? 'text-green-400' : 'text-red-400'}`}>
+            {runResult.success ? '✓ Accepted' : '✗ Wrong Answer'}
+          </span>
+          {runResult.success && (
+            <span className="font-mono text-[11px] text-base-content/35">
+              {runResult.runtime}s · {runResult.memory} KB
+            </span>
+          )}
+          {/* Case tabs */}
+          <div className="ml-auto flex gap-1.5">
+            {cases.map((tc, i) => {
+              const ok = tc.status_id === 3;
+              return (
+                <button
+                  key={i}
+                  onClick={() => setActiveCase(i)}
+                  className={`flex items-center gap-1 px-2.5 py-1 rounded-md font-mono text-[11px] border transition-colors duration-150
+                    ${i === activeCase
+                      ? ok
+                        ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                        : 'bg-red-500/10 border-red-500/30 text-red-400'
+                      : 'border-base-content/8 text-base-content/35 hover:text-base-content/60'
+                    }`}
+                >
+                  <span className={`text-[8px] ${ok ? 'text-green-400' : 'text-red-400'}`}>●</span>
+                  Case {i + 1}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="mt-3 flex items-center gap-2 text-xs text-base-content/40">
-          <div className="px-2 py-1 rounded-md bg-base-100 border border-base-content/8">Case 1</div>
-          <div className="px-2 py-1 rounded-md text-base-content/30 border border-transparent">Case 2</div>
-          <div className="px-2 py-1 rounded-md text-base-content/30 border border-transparent">+</div>
-        </div>
-
-        <div className="mt-4 flex flex-col gap-3">
-          <div>
-            <div className="text-xs text-base-content/40 mb-1">Input</div>
-            <div className="rounded-lg bg-base-100 border border-base-content/8 p-3 text-xs font-mono text-base-content/40">Run code to see input</div>
-          </div>
-          <div>
-            <div className="text-xs text-base-content/40 mb-1">Expected</div>
-            <div className="rounded-lg bg-base-100 border border-base-content/8 p-3 text-xs font-mono text-base-content/40">—</div>
-          </div>
-          <div>
-            <div className="text-xs text-base-content/40 mb-1">Output</div>
-            <div className="rounded-lg bg-base-100 border border-base-content/8 p-3 text-xs font-mono text-base-content/40">—</div>
-          </div>
+        {/* Fields */}
+        <div className="flex flex-col gap-2 h-full overflow-y-auto">
+          <FieldBox label="Input"    value={current.stdin}           />
+          <FieldBox label="Expected" value={current.expected_output} />
+          <FieldBox label="Output"   value={current.stdout}          highlight={passed ? 'pass' : 'fail'} />
         </div>
       </div>
     );
   }
 
-  const cases = runResult.testCases || [];
-  const current = cases[activeCase] || {};
+  // ── Before run: show visible test cases from problem ──
+  const visibleCases = problem?.visibleTestCases || [];
+
+  if (visibleCases.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full font-mono text-xs text-base-content/25">
+        Run your code to see test results
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center gap-3 border-b border-base-content/[0.07] pb-2">
-        <button className="px-2.5 py-1 rounded-md text-xs font-mono bg-base-100 border border-base-content/12">Testcase</button>
-        <button className="px-2.5 py-1 rounded-md text-xs font-mono text-base-content/40 border border-transparent">Test Result</button>
-        <div className={`ml-auto text-xs font-mono ${runResult.success ? 'text-green-400' : 'text-red-400'}`}>
-          {runResult.success ? 'Accepted' : 'Wrong Answer'}
-        </div>
-      </div>
-
-      <div className="mt-3 flex items-center gap-2 text-xs">
-        {cases.map((tc, i) => (
+    <div className="flex flex-col gap-2.5 h-full overflow-y-auto">
+      {/* Case tabs */}
+      <div className="flex gap-1.5">
+        {visibleCases.map((_, i) => (
           <button
             key={i}
             onClick={() => setActiveCase(i)}
-            className={`px-2.5 py-1 rounded-md border font-mono
+            className={`px-2.5 py-1 rounded-md font-mono text-[11px] border transition-colors duration-150
               ${i === activeCase
-                ? 'bg-base-100 border-base-content/12 text-base-content/80'
-                : 'border-transparent text-base-content/40 hover:text-base-content/70'
+                ? 'bg-base-100 border-base-content/15 text-base-content/80'
+                : 'border-transparent text-base-content/35 hover:text-base-content/60'
               }`}
           >
             Case {i + 1}
           </button>
         ))}
-        <button className="px-2.5 py-1 rounded-md border border-transparent text-base-content/30 font-mono">+</button>
       </div>
 
-      <div className="mt-4 flex flex-col gap-3 overflow-y-auto">
-        <div>
-          <div className="text-xs text-base-content/40 mb-1">Input</div>
-          <div className="rounded-lg bg-base-100 border border-base-content/8 p-3 text-xs font-mono text-base-content/70">
-            {current.stdin || '—'}
-          </div>
-        </div>
-        <div>
-          <div className="text-xs text-base-content/40 mb-1">Expected</div>
-          <div className="rounded-lg bg-base-100 border border-base-content/8 p-3 text-xs font-mono text-base-content/70">
-            {current.expected_output || '—'}
-          </div>
-        </div>
-        <div>
-          <div className="text-xs text-base-content/40 mb-1">Output</div>
-          <div className="rounded-lg bg-base-100 border border-base-content/8 p-3 text-xs font-mono text-base-content/70">
-            {current.stdout || '—'}
-          </div>
-        </div>
-
-        {/* Optional: quick summary cards */}
-        <div className="mt-2">
-          {cases.map((tc, i) => (
-            <TestCaseCard key={`summary-${i}`} tc={tc} index={i} />
-          ))}
-        </div>
+      {/* Fields */}
+      <div className="grid grid-cols-2 gap-2">
+        <FieldBox label="Input"    value={visibleCases[activeCase]?.input}  />
+        <FieldBox label="Expected" value={visibleCases[activeCase]?.output} />
       </div>
+      <p className="font-mono text-[11px] text-base-content/20 mt-1">
+        Click <span className="text-base-content/40">Run</span> to execute against these cases
+      </p>
     </div>
   );
 }
 
-// ── Submit result panel ──
-function ResultPanel({ submitResult, loading }) {
-  if (loading && !submitResult) {
+// ─────────────────────────────────────────
+// Submit result — full right-panel overlay
+// ─────────────────────────────────────────
+function SubmitOverlay({ submitResult, loadingAction, onClose }) {
+
+  // Judging spinner
+  if (loadingAction === 'submit') {
     return (
-      <div className="flex items-center justify-center h-full text-base-content/30">
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <span className="loading loading-spinner loading-xs" />
-          Submitting...
-        </div>
+      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-base-100 gap-4">
+        <span className="loading loading-spinner loading-lg" style={{ color: 'var(--green)' }} />
+        <p className="font-mono text-sm text-base-content/40">Judging your submission…</p>
       </div>
     );
   }
 
-  if (!submitResult) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-2 text-base-content/25">
-        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-        <span className="font-mono text-xs">Submit your code to see the result</span>
-      </div>
-    );
-  }
+  if (!submitResult) return null;
 
-  const accepted = submitResult.accepted;
+  const ok = submitResult.accepted;
 
   return (
-    <div className="flex flex-col gap-4 h-full overflow-y-auto">
-      {/* Big status */}
-      <div className={`rounded-xl border p-5 ${accepted
-        ? 'bg-green-500/6 border-green-500/20'
-        : 'bg-red-500/6 border-red-500/20'
-      }`}>
-        <div className={`text-2xl font-bold mb-1 ${accepted ? 'text-green-400' : 'text-red-400'}`}>
-          {accepted ? '✓ Accepted' : `✗ ${submitResult.error || 'Wrong Answer'}`}
-        </div>
-        <div className="flex flex-wrap gap-4 mt-3">
-          <div className="flex flex-col gap-0.5">
-            <span className="font-mono text-xs text-base-content/30">Test Cases</span>
-            <span className={`font-mono text-sm font-bold ${accepted ? 'text-green-400' : 'text-red-400'}`}>
-              {submitResult.passedTestCases}/{submitResult.totalTestCases}
-            </span>
+    <div className="absolute inset-0 z-20 flex flex-col bg-base-100 overflow-y-auto">
+
+      {/* Top bar */}
+      <div className="flex items-center justify-between px-5 shrink-0 border-b border-base-content/[0.07]" style={{ height: 44 }}>
+        <span className="font-mono text-xs text-base-content/30 uppercase tracking-widest">
+          Submission Result
+        </span>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-lg hover:bg-base-content/8 text-base-content/40 hover:text-base-content/70 transition-colors duration-150"
+          aria-label="Close"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="flex-1 flex flex-col items-center justify-center px-8 py-10 gap-6">
+
+        {/* Status icon + text */}
+        <div className="text-center">
+          <div className={`text-5xl font-bold mb-3 ${ok ? 'text-green-400' : 'text-red-400'}`}>
+            {ok ? '✓' : '✗'}
           </div>
-          {accepted && (
+          <h2 className={`text-2xl lg:text-3xl font-bold ${ok ? 'text-green-400' : 'text-red-400'}`}>
+            {ok ? 'Accepted' : (submitResult.error || 'Wrong Answer')}
+          </h2>
+          <p className="text-base-content/35 text-sm mt-2">
+            {ok
+              ? 'Your solution passed all test cases 🎉'
+              : `Passed ${submitResult.passedTestCases} of ${submitResult.totalTestCases} test cases`
+            }
+          </p>
+        </div>
+
+        {/* Stats */}
+        <div className={`grid gap-3 w-full max-w-xs ${ok ? 'grid-cols-3' : 'grid-cols-1'}`}>
+          <div className={`rounded-xl border p-4 text-center
+            ${ok ? 'bg-green-500/5 border-green-500/15' : 'bg-red-500/5 border-red-500/15'}`}
+          >
+            <p className="font-mono text-[11px] text-base-content/30 mb-1">Test Cases</p>
+            <p className={`font-mono text-xl font-bold ${ok ? 'text-green-400' : 'text-red-400'}`}>
+              {submitResult.passedTestCases}/{submitResult.totalTestCases}
+            </p>
+          </div>
+          {ok && (
             <>
-              <div className="flex flex-col gap-0.5">
-                <span className="font-mono text-xs text-base-content/30">Runtime</span>
-                <span className="font-mono text-sm font-bold text-green-400">{submitResult.runtime}s</span>
+              <div className="rounded-xl border border-base-content/8 bg-base-200 p-4 text-center">
+                <p className="font-mono text-[11px] text-base-content/30 mb-1">Runtime</p>
+                <p className="font-mono text-xl font-bold" style={{ color: 'var(--green)' }}>
+                  {submitResult.runtime}s
+                </p>
               </div>
-              <div className="flex flex-col gap-0.5">
-                <span className="font-mono text-xs text-base-content/30">Memory</span>
-                <span className="font-mono text-sm font-bold text-green-400">{submitResult.memory} KB</span>
+              <div className="rounded-xl border border-base-content/8 bg-base-200 p-4 text-center">
+                <p className="font-mono text-[11px] text-base-content/30 mb-1">Memory</p>
+                <p className="font-mono text-xl font-bold" style={{ color: 'var(--green)' }}>
+                  {submitResult.memory} KB
+                </p>
               </div>
             </>
           )}
         </div>
+
+        {/* Actions */}
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="btn btn-sm btn-ghost border border-base-content/10 font-mono text-xs"
+          >
+            ← Back to code
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
-// ══════════════════════════════════════════
+// ─────────────────────────────────────────
 // Main RightPanel
-// ══════════════════════════════════════════
-const CONSOLE_COLLAPSED_H = 44;   // px — just the bar
-const CONSOLE_EXPANDED_H  = 240;  // px — open drawer
-const NAVBAR_H = 48; // px — top bar
-
+// ─────────────────────────────────────────
 export default function RightPanel({
-  activeRightTab,
-  setActiveRightTab,
-  actionSignal,
-  loadingAction,
   selectedLanguage,
   onLanguageChange,
   code,
   onCodeChange,
   onEditorDidMount,
-  loading,
-  runResult,
-  submitResult,
 }) {
-  const [consoleOpen, setConsoleOpen] = useState(false);
-  const [showSubmissionPanel, setShowSubmissionPanel] = useState(false);
+  const [consoleOpen, setConsoleOpen]         = useState(false);
+  const [showSubmitOverlay, setShowSubmitOverlay] = useState(false);
+  const dispatch = useDispatch();
+  const { problem, loadingAction, runResult, submitResult } = useSelector(
+    (state) => state.problemDetail
+  );
 
+  // Auto-open console when run starts
   useEffect(() => {
-    if (!actionSignal) return;
-    if (actionSignal.type === 'run') {
-      setConsoleOpen(true);
-    }
-    if (actionSignal.type === 'submit') {
-      setConsoleOpen(true);
-      setShowSubmissionPanel(true);
-    }
-  }, [actionSignal]);
+    if (loadingAction === 'run') setConsoleOpen(true);
+  }, [loadingAction]);
 
-  const consoleH = consoleOpen ? CONSOLE_EXPANDED_H : CONSOLE_COLLAPSED_H;
+  // Show overlay when submit starts or result comes in
+  useEffect(() => {
+    if (loadingAction === 'submit' || submitResult) setShowSubmitOverlay(true);
+  }, [loadingAction, submitResult]);
+
+  const consoleH = consoleOpen ? CONSOLE_OPEN_H : CONSOLE_BAR_H;
 
   return (
-    <div className="w-1/2 flex flex-col bg-base-100 border-l border-base-content/[0.07]">
+    <div className="w-1/2 flex flex-col bg-base-100 border-l border-base-content/7 relative">
+
+      {/* Submit overlay — covers entire right panel */}
+      {showSubmitOverlay && (
+        <SubmitOverlay
+          submitResult={submitResult}
+          loadingAction={loadingAction}
+          onClose={() => {
+            setShowSubmitOverlay(false);
+            dispatch(clearResults());
+          }}
+        />
+      )}
 
       {/* ── Editor toolbar ── */}
-      <div className="flex items-center border-b border-base-content/[0.07] bg-base-200 px-3" style={{ height: NAVBAR_H }}>
-        <div className="text-sm font-semibold text-base-content/70">Code</div>
+      <div
+        className="flex items-center gap-3 px-4 border-b border-base-content/7 bg-base-200 shrink-0"
+        style={{ height: TOOLBAR_H }}
+      >
+        <span className="text-sm font-semibold text-base-content/50">Code</span>
 
-        {/* Language selector */}
-        <div className="ml-auto flex items-center gap-2">
-          <div className="relative">
-            <select
-              value={selectedLanguage}
-              onChange={(e) => onLanguageChange(e.target.value)}
-              className="select select-sm bg-base-100 border border-base-content/12 text-xs font-mono"
+        {/* Language pills */}
+        <div className="ml-auto flex items-center gap-1">
+          {Object.keys(LANG_LABELS).map((lang) => (
+            <button
+              key={lang}
+              onClick={() => onLanguageChange(lang)}
+              className={`px-2.5 py-1 rounded-md font-mono text-xs border transition-colors duration-150
+                ${selectedLanguage === lang
+                  ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                  : 'text-base-content/30 border-transparent hover:text-base-content/60 hover:bg-base-content/5'
+                }`}
             >
-              {Object.keys(LANG_LABELS).map((lang) => (
-                <option key={lang} value={lang}>
-                  {LANG_LABELS[lang]}
-                </option>
-              ))}
-            </select>
-          </div>
+              {LANG_LABELS[lang]}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* ── Editor area — fills remaining height ── */}
+      {/* ── Monaco Editor ── */}
       <div
-        className="flex-1 overflow-hidden transition-all duration-200"
-        style={{ height: `calc(100% - ${NAVBAR_H}px - ${consoleH}px)` }}
+        className="overflow-hidden"
+        style={{ height: `calc(100% - ${TOOLBAR_H}px - ${consoleH}px)` }}
       >
-        <div className="flex h-full">
-          <div className="flex-1 overflow-hidden">
-            <Editor
-              height="100%"
-              language={getMonacoLang(selectedLanguage)}
-              value={code}
-              onChange={onCodeChange}
-              onMount={onEditorDidMount}
-              theme="vs-dark"
-              options={{
-                fontSize: 14,
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                tabSize: 2,
-                insertSpaces: true,
-                wordWrap: 'on',
-                lineNumbers: 'on',
-                glyphMargin: false,
-                folding: true,
-                lineDecorationsWidth: 10,
-                lineNumbersMinChars: 3,
-                renderLineHighlight: 'line',
-                roundedSelection: false,
-                cursorStyle: 'line',
-                mouseWheelZoom: true,
-                padding: { top: 12 },
-              }}
-            />
-          </div>
-
-          {/* Submission side panel */}
-          {showSubmissionPanel && (
-            <div className="w-[320px] border-l border-base-content/[0.07] bg-base-200 flex flex-col">
-              <div className="flex items-center justify-between px-3 border-b border-base-content/[0.07]" style={{ height: 40 }}>
-                <div className="text-xs font-mono text-base-content/60">Submission</div>
-                <button
-                  onClick={() => setShowSubmissionPanel(false)}
-                  className="p-1 rounded hover:bg-base-content/10 text-base-content/50 hover:text-base-content/80"
-                  aria-label="Close submission panel"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M18 6 6 18M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <div className="flex-1 overflow-y-auto p-3">
-                <ResultPanel submitResult={submitResult} loading={loading && loadingAction === 'submit'} />
-              </div>
-            </div>
-          )}
-        </div>
+        <Editor
+          height="100%"
+          language={getMonacoLang(selectedLanguage)}
+          value={code}
+          onChange={onCodeChange}
+          onMount={onEditorDidMount}
+          theme="vs-dark"
+          options={{
+            fontSize: 14,
+            minimap: { enabled: false },
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            tabSize: 2,
+            insertSpaces: true,
+            wordWrap: 'on',
+            lineNumbers: 'on',
+            glyphMargin: false,
+            folding: true,
+            lineDecorationsWidth: 10,
+            lineNumbersMinChars: 3,
+            renderLineHighlight: 'line',
+            roundedSelection: false,
+            cursorStyle: 'line',
+            mouseWheelZoom: true,
+            padding: { top: 12 },
+          }}
+        />
       </div>
 
       {/* ── Bottom console drawer ── */}
       <div
-        className="flex flex-col border-t border-base-content/7 bg-base-200 overflow-hidden transition-all duration-200"
+        className="flex flex-col border-t border-base-content/7 bg-base-200 shrink-0 overflow-hidden transition-all duration-200"
         style={{ height: consoleH }}
       >
-        {/* Console bar — always visible */}
-        <div className="flex items-center justify-between px-4 shrink-0" style={{ height: CONSOLE_COLLAPSED_H }}>
-          <div className="flex items-center gap-1">
-            {/* Toggle chevron + label */}
+        {/* Always-visible bar */}
+        <div
+          className="flex items-center justify-between px-4 shrink-0"
+          style={{ height: CONSOLE_BAR_H }}
+        >
+          {/* Left: toggle + status */}
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setConsoleOpen(o => !o)}
-              className="flex items-center gap-1.5 text-xs font-mono text-base-content/40 hover:text-base-content/70 transition-colors duration-150"
+              className="flex items-center gap-1.5 font-mono text-xs text-base-content/40 hover:text-base-content/70 transition-colors duration-150"
             >
               <svg
                 className={`w-3.5 h-3.5 transition-transform duration-200 ${consoleOpen ? 'rotate-180' : ''}`}
@@ -335,26 +370,27 @@ export default function RightPanel({
               Console
             </button>
 
-            {/* Quick status pill — shown when closed and result exists */}
-            {!consoleOpen && (runResult || submitResult) && (
-              <span className={`ml-2 px-2 py-0.5 rounded-full font-mono text-[10px] border
-                ${(runResult?.success || submitResult?.accepted)
+            {!consoleOpen && runResult && (
+              <span className={`px-2 py-0.5 rounded-full font-mono text-[10px] border
+                ${runResult.success
                   ? 'bg-green-500/10 border-green-500/25 text-green-400'
                   : 'bg-red-500/10 border-red-500/25 text-red-400'
                 }`}
               >
-                {runResult?.success || submitResult?.accepted ? '✓ Passed' : '✗ Failed'}
+                {runResult.success ? '✓ Accepted' : '✗ Failed'}
               </span>
             )}
           </div>
-
-          <div className="flex items-center gap-2" />
         </div>
 
-        {/* Console content — visible only when open */}
+        {/* Console body */}
         {consoleOpen && (
-          <div className="flex-1 overflow-hidden px-4 pb-4">
-            <TestcasePanel runResult={runResult} />
+          <div className="flex-1 overflow-hidden px-4 pb-3">
+            <ConsoleContent
+              problem={problem}
+              runResult={runResult}
+              loadingAction={loadingAction}
+            />
           </div>
         )}
       </div>

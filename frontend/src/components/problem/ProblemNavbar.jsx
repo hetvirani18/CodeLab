@@ -10,11 +10,10 @@ import { CloudUpload, Play } from 'lucide-react';
 export default function ProblemNavbar({
   onRun,
   onSubmit,
-  loading,
-  loadingAction,
 }) {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { streak, todaySolved } = useSelector((state) => state.activity);
+  const { loading, loadingAction } = useSelector((state) => state.problemDetail);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -42,7 +41,7 @@ export default function ProblemNavbar({
           </NavLink>
           <NavLink
             to="/problemset"
-            className="text-sm text-base-content/70 hover:text-base-content"
+            className="px-3 py-1.5 rounded-lg text-sm font-medium text-base-content/70 hover:text-base-content hover:bg-base-content/5"
           >
             Problem set
           </NavLink>
@@ -64,8 +63,8 @@ export default function ProblemNavbar({
           <button
             onClick={onSubmit}
             disabled={loading}
-            className="btn btn-sm font-mono text-xs font-bold border-none bg-base-500
-                    disabled:opacity-40 text-green-400 hover:bg-base-content/5"
+            className="btn btn-sm btn-ghost border border-base-content/12 font-mono text-xs font-bold  bg-base-500
+                    disabled:opacity-40 text-green-400 hover:border-base-content/30"
           >
             {loading && loadingAction === 'submit'
               ? <span className="loading loading-spinner loading-xs" />
@@ -76,7 +75,7 @@ export default function ProblemNavbar({
 
         {/* Right */}
         <div className="navbar-end gap-3">
-          {isAuthenticated && <StreakBadge streak={streak} todaySolved={todaySolved} />}
+          {isAuthenticated && <StreakBadge streak={streak} todaySolved={todaySolved}/>}
 
           {isAuthenticated && (
             <div className="dropdown dropdown-end">

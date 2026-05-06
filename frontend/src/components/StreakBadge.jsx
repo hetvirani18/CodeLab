@@ -4,7 +4,7 @@ export default function StreakBadge({ streak, todaySolved }) {
   const active = todaySolved;
 
   return (
-    <div className="relative group">
+    <div className="relative group hover:bg-base-content/10 rounded-md">
       
         <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-base-200/40">
             <Flame

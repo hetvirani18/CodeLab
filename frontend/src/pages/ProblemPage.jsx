@@ -1,12 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
 import { useParams } from 'react-router';
-import axiosClient from "../utils/axiosClient"
 import LeftPanel from '../components/problem/LeftPanel';
 import RightPanel from '../components/problem/RightPanel';
 import ProblemNavbar from '../components/problem/ProblemNavbar';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserActivity } from '../store/activitySlice';
+import {
+  fetchProblemDetail,
+  runProblem,
+  submitProblem,
+  clearProblem,
+  clearResults,
+} from '../store/porblemDetailSlice';
 
 const languageMap = {
   'c++': 'cpp',
@@ -15,47 +20,33 @@ const languageMap = {
 };
 
 const ProblemPage = () => {
-  const [problem, setProblem] = useState(null);
   const [selectedLanguage, setSelectedLanguage] = useState('javascript');
   const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [runResult, setRunResult] = useState(null);
-  const [submitResult, setSubmitResult] = useState(null);
-  const [activeLeftTab, setActiveLeftTab] = useState('description');
-  const [activeRightTab, setActiveRightTab] = useState('code');
-  const [actionSignal, setActionSignal] = useState(null);
-  const [loadingAction, setLoadingAction] = useState(null);
   const editorRef = useRef(null);
   let {problemId}  = useParams();
 
-  const { handleSubmit } = useForm();
+  const dispatch = useDispatch();
+  const {
+    problem,
+    loading,
+  } = useSelector((state) => state.problemDetail);
 
   useEffect(() => {
-    const fetchProblem = async () => {
-      setLoading(true);
-      try {
-        
-        const response = await axiosClient.get(`/problem/problem-by-id/${problemId}`);
-        
-        const initialCode = response.data.startCode.find((sc => sc.language === languageMap[selectedLanguage] )).initialCode || '';
-
-        setProblem(response.data);
-        setCode(initialCode);
-        setLoading(false);
-        
-      } catch (error) {
-        console.error('Error fetching problem:', error);
-        setLoading(false);
-      }
+    dispatch(fetchProblemDetail(problemId));
+    return () => {
+      dispatch(clearProblem());
     };
-
-    fetchProblem();
-  }, [problemId]);
+  }, [dispatch, problemId]);
 
   // Update code when language changes
   useEffect(() => {
     if (problem) {
-      const initialCode = problem.startCode.find(sc => sc.language === selectedLanguage)?.initialCode || '';
+      const apiLanguage = languageMap[selectedLanguage] || selectedLanguage;
+      const languageCandidates = [apiLanguage, selectedLanguage].map((lang) => lang.toLowerCase());
+      const initialCode =
+        problem.startCode.find(
+          (sc) => languageCandidates.includes((sc.language || '').toLowerCase())
+        )?.initialCode || '';
       setCode(initialCode);
     }
   }, [selectedLanguage, problem]);
@@ -73,66 +64,21 @@ const ProblemPage = () => {
   };
 
   const handleRun = async () => {
-    setLoading(true);
-    setRunResult(null);
-    setLoadingAction('run');
-    setActionSignal({ type: 'run', id: Date.now() });
-    
-    try {
-      const response = await axiosClient.post(`/submission/run/${problemId}`, {
-        code,
-        language: selectedLanguage
-      });
-
-      setRunResult(response.data);
-      setLoading(false);
-      setActiveRightTab('testcase');
-      
-    } catch (error) {
-      console.error('Error running code:', error);
-      setRunResult({
-        success: false,
-        error: 'Internal server error'
-      });
-      setLoading(false);
-      setActiveRightTab('testcase');
-    }
+    dispatch(clearResults());
+    await dispatch(runProblem({ problemId, code, language: selectedLanguage }));
   };
-
-  const dispatch = useDispatch();
 
   const handleSubmitCode = async () => {
-    setLoading(true);
-    setSubmitResult(null);
-    setLoadingAction('submit');
-    setActionSignal({ type: 'submit', id: Date.now() });
-    
     try {
-        const response = await axiosClient.post(`/submission/submit/${problemId}`, {
-        code:code,
-        language: selectedLanguage
-      });
-
-      setSubmitResult(response.data);
-      setLoading(false);
-      setActiveRightTab('result');
-      if(response.data.accepted){
+      const response = await dispatch(
+        submitProblem({ problemId, code, language: selectedLanguage })
+      ).unwrap();
+      if (response.accepted) {
         dispatch(fetchUserActivity());
       }
-      
     } catch (error) {
-      console.error('Error submitting code:', error);
-      setSubmitResult(null);
-      setLoading(false);
-      setActiveRightTab('result');
     }
   };
-
-  useEffect(() => {
-    if (!loading) {
-      setLoadingAction(null);
-    }
-  }, [loading]);
 
   if (loading && !problem) {
     return (
@@ -147,29 +93,16 @@ const ProblemPage = () => {
       <ProblemNavbar
         onRun={handleRun}
         onSubmit={handleSubmitCode}
-        loading={loading}
-        loadingAction={loadingAction}
       />
       <div className="flex flex-1 min-h-0">
         <LeftPanel
-          problem={problem}
-          problemId={problemId}
-          activeLeftTab={activeLeftTab}
-          setActiveLeftTab={setActiveLeftTab}
         />
         <RightPanel
-          activeRightTab={activeRightTab}
-          setActiveRightTab={setActiveRightTab}
-          actionSignal={actionSignal}
-          loadingAction={loadingAction}
           selectedLanguage={selectedLanguage}
           onLanguageChange={handleLanguageChange}
           code={code}
           onCodeChange={handleEditorChange}
           onEditorDidMount={handleEditorDidMount}
-          loading={loading}
-          runResult={runResult}
-          submitResult={submitResult}
         />
       </div>
     </div>
