@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Editor from '@monaco-editor/react';
-import { clearResults } from '../../store/porblemDetailSlice';
 
 const getMonacoLang = (lang) => (lang === 'c++' ? 'cpp' : lang);
 const LANG_LABELS = { javascript: 'JavaScript', java: 'Java', 'c++': 'C++' };
@@ -146,105 +145,6 @@ function ConsoleContent({ problem, runResult, loadingAction }) {
 }
 
 // ─────────────────────────────────────────
-// Submit result — full right-panel overlay
-// ─────────────────────────────────────────
-function SubmitOverlay({ submitResult, loadingAction, onClose }) {
-
-  // Judging spinner
-  if (loadingAction === 'submit') {
-    return (
-      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-base-100 gap-4">
-        <span className="loading loading-spinner loading-lg" style={{ color: 'var(--green)' }} />
-        <p className="font-mono text-sm text-base-content/40">Judging your submission…</p>
-      </div>
-    );
-  }
-
-  if (!submitResult) return null;
-
-  const ok = submitResult.accepted;
-
-  return (
-    <div className="absolute inset-0 z-20 flex flex-col bg-base-100 overflow-y-auto">
-
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-5 shrink-0 border-b border-base-content/[0.07]" style={{ height: 44 }}>
-        <span className="font-mono text-xs text-base-content/30 uppercase tracking-widest">
-          Submission Result
-        </span>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-base-content/8 text-base-content/40 hover:text-base-content/70 transition-colors duration-150"
-          aria-label="Close"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Body */}
-      <div className="flex-1 flex flex-col items-center justify-center px-8 py-10 gap-6">
-
-        {/* Status icon + text */}
-        <div className="text-center">
-          <div className={`text-5xl font-bold mb-3 ${ok ? 'text-green-400' : 'text-red-400'}`}>
-            {ok ? '✓' : '✗'}
-          </div>
-          <h2 className={`text-2xl lg:text-3xl font-bold ${ok ? 'text-green-400' : 'text-red-400'}`}>
-            {ok ? 'Accepted' : (submitResult.error || 'Wrong Answer')}
-          </h2>
-          <p className="text-base-content/35 text-sm mt-2">
-            {ok
-              ? 'Your solution passed all test cases 🎉'
-              : `Passed ${submitResult.passedTestCases} of ${submitResult.totalTestCases} test cases`
-            }
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className={`grid gap-3 w-full max-w-xs ${ok ? 'grid-cols-3' : 'grid-cols-1'}`}>
-          <div className={`rounded-xl border p-4 text-center
-            ${ok ? 'bg-green-500/5 border-green-500/15' : 'bg-red-500/5 border-red-500/15'}`}
-          >
-            <p className="font-mono text-[11px] text-base-content/30 mb-1">Test Cases</p>
-            <p className={`font-mono text-xl font-bold ${ok ? 'text-green-400' : 'text-red-400'}`}>
-              {submitResult.passedTestCases}/{submitResult.totalTestCases}
-            </p>
-          </div>
-          {ok && (
-            <>
-              <div className="rounded-xl border border-base-content/8 bg-base-200 p-4 text-center">
-                <p className="font-mono text-[11px] text-base-content/30 mb-1">Runtime</p>
-                <p className="font-mono text-xl font-bold" style={{ color: 'var(--green)' }}>
-                  {submitResult.runtime}s
-                </p>
-              </div>
-              <div className="rounded-xl border border-base-content/8 bg-base-200 p-4 text-center">
-                <p className="font-mono text-[11px] text-base-content/30 mb-1">Memory</p>
-                <p className="font-mono text-xl font-bold" style={{ color: 'var(--green)' }}>
-                  {submitResult.memory} KB
-                </p>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="btn btn-sm btn-ghost border border-base-content/10 font-mono text-xs"
-          >
-            ← Back to code
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────
 // Main RightPanel
 // ─────────────────────────────────────────
 export default function RightPanel({
@@ -254,10 +154,8 @@ export default function RightPanel({
   onCodeChange,
   onEditorDidMount,
 }) {
-  const [consoleOpen, setConsoleOpen]         = useState(false);
-  const [showSubmitOverlay, setShowSubmitOverlay] = useState(false);
-  const dispatch = useDispatch();
-  const { problem, loadingAction, runResult, submitResult } = useSelector(
+  const [consoleOpen, setConsoleOpen] = useState(false);
+  const { problem, loadingAction, runResult } = useSelector(
     (state) => state.problemDetail
   );
 
@@ -266,51 +164,28 @@ export default function RightPanel({
     if (loadingAction === 'run') setConsoleOpen(true);
   }, [loadingAction]);
 
-  // Show overlay when submit starts or result comes in
-  useEffect(() => {
-    if (loadingAction === 'submit' || submitResult) setShowSubmitOverlay(true);
-  }, [loadingAction, submitResult]);
-
   const consoleH = consoleOpen ? CONSOLE_OPEN_H : CONSOLE_BAR_H;
 
   return (
     <div className="w-1/2 flex flex-col bg-base-100 border-l border-base-content/7 relative">
-
-      {/* Submit overlay — covers entire right panel */}
-      {showSubmitOverlay && (
-        <SubmitOverlay
-          submitResult={submitResult}
-          loadingAction={loadingAction}
-          onClose={() => {
-            setShowSubmitOverlay(false);
-            dispatch(clearResults());
-          }}
-        />
-      )}
 
       {/* ── Editor toolbar ── */}
       <div
         className="flex items-center gap-3 px-4 border-b border-base-content/7 bg-base-200 shrink-0"
         style={{ height: TOOLBAR_H }}
       >
-        <span className="text-sm font-semibold text-base-content/50">Code</span>
-
-        {/* Language pills */}
-        <div className="ml-auto flex items-center gap-1">
+        <select
+          id="language-select"
+          value={selectedLanguage}
+          onChange={(e) => onLanguageChange(e.target.value)}
+          className="rounded-md border border-base-content/15 bg-base-100 px-2.5 py-1.5 font-mono text-xs text-base-content/70 focus:outline-none focus:ring-2 focus:ring-green-500/30"
+        >
           {Object.keys(LANG_LABELS).map((lang) => (
-            <button
-              key={lang}
-              onClick={() => onLanguageChange(lang)}
-              className={`px-2.5 py-1 rounded-md font-mono text-xs border transition-colors duration-150
-                ${selectedLanguage === lang
-                  ? 'bg-green-500/10 border-green-500/30 text-green-400'
-                  : 'text-base-content/30 border-transparent hover:text-base-content/60 hover:bg-base-content/5'
-                }`}
-            >
+            <option key={lang} value={lang}>
               {LANG_LABELS[lang]}
-            </button>
+            </option>
           ))}
-        </div>
+        </select>
       </div>
 
       {/* ── Monaco Editor ── */}

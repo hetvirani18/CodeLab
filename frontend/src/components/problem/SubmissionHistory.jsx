@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import axiosClient from '../../utils/axiosClient';
+import { useParams } from 'react-router';
 
-const SubmissionHistory = ({ problemId }) => {
+const SubmissionHistory = () => {
+
+  const { problemId } = useParams();
+
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

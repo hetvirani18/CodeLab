@@ -1,3 +1,5 @@
+import { useSelector } from "react-redux";
+
 const DIFF_CONFIG = {
   easy:   { label: 'Easy',   class: 'text-green-400  bg-green-500/8   border-green-500/25'  },
   medium: { label: 'Medium', class: 'text-yellow-400 bg-yellow-500/8  border-yellow-500/25' },
@@ -22,7 +24,9 @@ function Section({ children, className = '' }) {
   );
 }
 
-export default function DescriptionPanel({ problem }) {
+export default function DescriptionPanel() {
+  const {problem} = useSelector((state) => state.problemDetail);
+
   const diff = DIFF_CONFIG[problem.difficulty] ?? { label: problem.difficulty, class: 'text-base-content/50 bg-base-content/5 border-base-content/15' };
 
   return (

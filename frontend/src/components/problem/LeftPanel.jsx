@@ -3,11 +3,13 @@ import ChatAI from './ChatAI';
 import Editorial from './Editorial';
 import DescriptionPanel from './DescriptionPanel';
 import SolutionsPanel from './SolutionsPanel';
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router';
+import { clearResults } from '../../store/porblemDetailSlice';
+import SubmissionResultPanel from '../SubmissionResult';
 
-const TABS = [
+const BASE_TABS = [
   { id: 'description', label: 'Description' },
   { id: 'editorial',   label: 'Editorial'   },
   { id: 'solutions',   label: 'Solutions'   },
@@ -15,30 +17,68 @@ const TABS = [
   { id: 'chatAI',      label: 'AI Chat'     },
 ];
 
+const SUBMIT_TAB_ID = 'submissionResult';
+
 export default function LeftPanel() {
   const [activeLeftTab, setActiveLeftTab] = useState('description');
-  const { problem } = useSelector((state) => state.problemDetail);
+  const [showSubmitTab, setShowSubmitTab] = useState(false);
+  const dispatch = useDispatch();
+  const { problem, loadingAction, submitResult } = useSelector((state) => state.problemDetail);
   const { problemId } = useParams();
+
+  useEffect(() => {
+    if (loadingAction === 'submit' || submitResult) {
+      setShowSubmitTab(true);
+      setActiveLeftTab(SUBMIT_TAB_ID);
+    }
+  }, [loadingAction, submitResult]);
+
+  const tabs = showSubmitTab
+    ? [...BASE_TABS, { id: SUBMIT_TAB_ID, label: 'Submission' }]
+    : BASE_TABS;
 
   return (
     <div className="w-1/2 flex flex-col border-r border-base-content/[0.07] bg-base-100">
 
       {/* ── Tab bar ── */}
       <div className="flex items-end gap-0 px-4 border-b border-base-content/[0.07] bg-base-200 overflow-x-auto shrink-0">
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const active = activeLeftTab === tab.id;
+          const isSubmit = tab.id === SUBMIT_TAB_ID;
           return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveLeftTab(tab.id)}
-              className={`px-3.5 py-2.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors duration-150
-                ${active
-                  ? 'border-green-500 text-green-400'
-                  : 'border-transparent text-base-content/40 hover:text-base-content/70'
-                }`}
-            >
-              {tab.label}
-            </button>
+            <div key={tab.id} className="relative flex items-end">
+              <button
+                onClick={() => setActiveLeftTab(tab.id)}
+                className={`px-3.5 py-2.5 text-sm font-medium border-b-2 whitespace-nowrap transition-colors duration-150
+                  ${active
+                    ? 'border-green-500 text-green-400'
+                    : 'border-transparent text-base-content/40 hover:text-base-content/70'
+                  }
+                  ${isSubmit ? 'pr-7' : ''}`}
+              >
+                {tab.label}
+              </button>
+              {isSubmit && (
+                <button
+                  onClick={() => {
+                    setShowSubmitTab(false);
+                    if (activeLeftTab === SUBMIT_TAB_ID) setActiveLeftTab('chatAI');
+                    dispatch(clearResults());
+                  }}
+                  className={`absolute right-1.5 top-1/2 -translate-y-1/2 rounded-md p-1 cursor-pointer
+                    ${active
+                      ? 'text-green-300 hover:text-green-200'
+                      : 'text-base-content/30 hover:text-base-content/60'
+                    }`}
+                  aria-label="Close submission tab"
+                  type="button"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
           );
         })}
       </div>
@@ -64,19 +104,15 @@ export default function LeftPanel() {
           <div className="p-5">
 
             {activeLeftTab === 'description' && (
-              <DescriptionPanel problem={problem} />
+              <DescriptionPanel />
             )}
 
             {activeLeftTab === 'editorial' && (
-                <Editorial
-                  secureUrl={problem?.secureUrl}
-                  thumbnailUrl={problem?.thumbnailUrl}
-                  duration={problem?.duration}
-                />
+                <Editorial />
             )}
 
             {activeLeftTab === 'solutions' && (
-              <SolutionsPanel problem={problem} />
+              <SolutionsPanel />
             )}
 
             {activeLeftTab === 'submissions' && (
@@ -84,7 +120,7 @@ export default function LeftPanel() {
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="text-base font-semibold">My Submissions</h2>
                 </div>
-                <SubmissionHistory problemId={problemId} />
+                <SubmissionHistory />
               </div>
             )}
 
@@ -96,8 +132,12 @@ export default function LeftPanel() {
                     beta
                   </span>
                 </div>
-                <ChatAI problem={problem} />
+                <ChatAI />
               </div>
+            )}
+
+            {activeLeftTab === SUBMIT_TAB_ID && (
+              <SubmissionResultPanel/>
             )}
           </div>
         )}

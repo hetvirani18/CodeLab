@@ -2,8 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import axiosClient from "../../utils/axiosClient";
 import { Send } from 'lucide-react';
+import { useSelector } from "react-redux";
 
-function ChatAI({problem}) {
+function ChatAI() {
+
+    const {problem} = useSelector((state) => state.problemDetail);
+
     const [messages, setMessages] = useState([
         { role: 'model', parts: [{text: "Hello! I'm your DSA tutor. How can I assist you today?"}] },
     ]);
