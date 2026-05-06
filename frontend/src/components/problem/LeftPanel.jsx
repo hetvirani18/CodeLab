@@ -68,16 +68,11 @@ export default function LeftPanel() {
             )}
 
             {activeLeftTab === 'editorial' && (
-              <div>
-                <div className="flex items-center gap-2 mb-5">
-                  <h2 className="text-base font-semibold">Editorial</h2>
-                </div>
                 <Editorial
                   secureUrl={problem?.secureUrl}
                   thumbnailUrl={problem?.thumbnailUrl}
                   duration={problem?.duration}
                 />
-              </div>
             )}
 
             {activeLeftTab === 'solutions' && (

@@ -67,8 +67,10 @@ function ConsoleContent({ problem, runResult, loadingAction }) {
               {runResult.runtime}s · {runResult.memory} KB
             </span>
           )}
+        </div>
+        <div className='flex gap-1.5'>
           {/* Case tabs */}
-          <div className="ml-auto flex gap-1.5">
+          <div className=" flex gap-1.5">
             {cases.map((tc, i) => {
               const ok = tc.status_id === 3;
               return (
@@ -132,7 +134,7 @@ function ConsoleContent({ problem, runResult, loadingAction }) {
       </div>
 
       {/* Fields */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="flex flex-col gap-2 h-full overflow-y-auto">
         <FieldBox label="Input"    value={visibleCases[activeCase]?.input}  />
         <FieldBox label="Expected" value={visibleCases[activeCase]?.output} />
       </div>
