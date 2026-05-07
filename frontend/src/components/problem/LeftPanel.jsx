@@ -19,7 +19,7 @@ const BASE_TABS = [
 
 const SUBMIT_TAB_ID = 'submissionResult';
 
-export default function LeftPanel() {
+export default function LeftPanel({ code, selectedLanguage }) {
   const [activeLeftTab, setActiveLeftTab] = useState('description');
   const [showSubmitTab, setShowSubmitTab] = useState(false);
   const dispatch = useDispatch();
@@ -120,7 +120,7 @@ export default function LeftPanel() {
             )}
 
             {activeLeftTab === 'chatAI' && (
-              <ChatAI />
+              <ChatAI code={code} selectedLanguage={selectedLanguage} />
             )}
 
             {activeLeftTab === SUBMIT_TAB_ID && (

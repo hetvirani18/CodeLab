@@ -96,6 +96,8 @@ const ProblemPage = () => {
       />
       <div className="flex flex-1 min-h-0">
         <LeftPanel
+          code={code}
+          selectedLanguage={selectedLanguage}
         />
         <RightPanel
           selectedLanguage={selectedLanguage}
