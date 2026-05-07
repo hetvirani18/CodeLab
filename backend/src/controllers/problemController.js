@@ -104,6 +104,36 @@ const getProblemById = async (req, res) => {
     }
 } 
 
+const getProblemByIdAdmin = async (req, res) => {
+    const {id} = req.params;
+
+    try{
+        if(!id) return res.status(400).send("Error: ID Missing");
+
+        const getProblem = await Problem.findById(id).select('title description difficulty tags visibleTestCases hiddenTestCases startCode referenceSolution acceptedSubmissions totalSubmissions');
+
+        if(!getProblem) return res.status(404).send("Problem is missing");
+
+        const video = await solutionVideo.findOne({problemId: id});
+
+        if(video){
+            const responseData = {
+                ...getProblem.toObject(),
+                secureUrl: video.secureUrl,
+                thumbnailUrl: video.thumbnailUrl,
+                duration: video.duration,
+            };
+
+            return res.status(200).send(responseData);
+        }
+
+        res.status(200).send(getProblem);
+    }
+    catch(err){
+        res.status(500).send("Error: "+ err.message);
+    }
+}
+
 const getAllProblems = async (req, res) => {
     try{
         const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -153,4 +183,4 @@ const submittedCode = async (req, res) => {
     }
 }
 
-module.exports = {createProblem, updateProblem, deleteProblem, getProblemById, getAllProblems, solvedAllProblemsByUser, submittedCode};
+module.exports = {createProblem, updateProblem, deleteProblem, getProblemById, getProblemByIdAdmin, getAllProblems, solvedAllProblemsByUser, submittedCode};

@@ -1,120 +1,256 @@
 import { useEffect, useState } from 'react';
-import axiosClient from '../../utils/axiosClient'
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProblems } from '../../store/problemSlice';
+import Pagination from '../Pagination';
+import toast from 'react-hot-toast';
+import axiosClient from '../../utils/axiosClient';
 
-const DeleteProblem = () => {
-  const [problems, setProblems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+const DIFF = {
+  easy:   'text-green-400  bg-green-500/8   border-green-500/25',
+  medium: 'text-yellow-400 bg-yellow-500/8  border-yellow-500/25',
+  hard:   'text-red-400    bg-red-500/8     border-red-500/25',
+};
 
-
-  useEffect(() => {
-    fetchProblems();
-  }, []);
-
-  const fetchProblems = async () => {
-    try {
-      setLoading(true);
-      const { data } = await axiosClient.get('/problem/all-problems');
-      setProblems(data.problems);
-    } catch (err) {
-      setError('Failed to fetch problems');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this problem?')) return;
-    
-    try {
-      await axiosClient.delete(`/problem/delete/${id}`);
-      setProblems(problems.filter(problem => problem._id !== id));
-    } catch (err) {
-      setError('Failed to delete problem');
-      console.error(err);
-    }
-  };
-
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="alert alert-error shadow-lg my-4">
-        <div>
-          <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{error}</span>
-        </div>
-      </div>
-    );
-  }
-
+// ── Confirm modal ──
+function ConfirmModal({ problem, onConfirm, onCancel, loading }) {
+  if (!problem) return null;
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Delete Problems</h1>
-      </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onCancel}
+      />
+      {/* Dialog */}
+      <div
+        className="relative z-10 w-full max-w-sm rounded-2xl border border-red-500/20 bg-base-200 p-6"
+        style={{ boxShadow: '0 0 40px rgba(255,70,70,0.1), 0 20px 60px rgba(0,0,0,0.5)' }}
+      >
+        {/* Top red line */}
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-px rounded-full"
+          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,70,70,0.5), transparent)' }}
+        />
 
-      <div className="overflow-x-auto">
-        <table className="table table-zebra w-full">
-          <thead>
-            <tr>
-              <th className="w-1/12">#</th>
-              <th className="w-4/12">Title</th>
-              <th className="w-2/12">Difficulty</th>
-              <th className="w-3/12">Tags</th>
-              <th className="w-2/12">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {problems.map((problem, index) => (
-              <tr key={problem._id}>
-                <th>{index + 1}</th>
-                <td>{problem.title}</td>
-                <td>
-                  <span className={`badge ${
-                    problem.difficulty === 'Easy' 
-                      ? 'badge-success' 
-                      : problem.difficulty === 'Medium' 
-                        ? 'badge-warning' 
-                        : 'badge-error'
-                  }`}>
-                    {problem.difficulty}
-                  </span>
-                </td>
-                <td>
-                  {problem.tags.map((tag, idx) => (
-                    <span key={idx} className="badge badge-outline mr-1">
-                      {tag}
-                    </span>
-                  ))}
-                </td>
-                <td>
-                  <div className="flex space-x-2">
-                    <button 
-                      onClick={() => handleDelete(problem._id)}
-                      className="btn btn-sm btn-error"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="text-center mb-5">
+          <div className="text-4xl mb-3">🗑️</div>
+          <h3 className="text-lg font-bold mb-1">Delete Problem</h3>
+          <p className="text-sm text-base-content/50 leading-relaxed">
+            Are you sure you want to delete{' '}
+            <span className="text-base-content/80 font-semibold">"{problem.title}"</span>?
+            This cannot be undone.
+          </p>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={onCancel}
+            disabled={loading}
+            className="flex-1 btn btn-ghost border border-base-content/10 font-mono text-xs"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex-1 btn border-none font-mono text-xs font-bold text-white bg-red-500 hover:bg-red-400 disabled:opacity-50"
+          >
+            {loading
+              ? <span className="loading loading-spinner loading-xs" />
+              : 'Delete →'
+            }
+          </button>
+        </div>
       </div>
     </div>
   );
-};
+}
 
-export default DeleteProblem;
+// ── Skeleton row ──
+function SkeletonRow() {
+  return (
+    <tr className="border-b border-base-content/5">
+      <td className="py-3.5 pl-5"><div className="h-4 w-5 bg-base-content/8 rounded animate-pulse" /></td>
+      <td className="py-3.5"><div className="h-4 w-48 bg-base-content/8 rounded animate-pulse" /></td>
+      <td className="py-3.5"><div className="h-5 w-16 bg-base-content/8 rounded-full animate-pulse" /></td>
+      <td className="py-3.5 hidden md:table-cell"><div className="h-5 w-20 bg-base-content/8 rounded-full animate-pulse" /></td>
+      <td className="py-3.5 pr-5"><div className="h-7 w-16 bg-base-content/8 rounded-lg animate-pulse ml-auto" /></td>
+    </tr>
+  );
+}
+
+export default function DeleteProblem() {
+  const dispatch = useDispatch();
+  const { list, totalPages, currentPage, loading } = useSelector((s) => s.problems);
+
+  const [toDelete,  setToDelete]  = useState(null);   // problem object
+  const [deleting,  setDeleting]  = useState(false);
+  const [localList, setLocalList] = useState(null);   // optimistic local copy
+
+  // Use localList if we have it (after a delete), otherwise use Redux list
+  const problems = localList ?? list;
+
+  useEffect(() => {
+    dispatch(fetchProblems(1));
+  }, [dispatch]);
+
+  // Reset local list when Redux list updates (page change)
+  useEffect(() => {
+    setLocalList(null);
+  }, [list]);
+
+  const handlePageChange = (page) => {
+    dispatch(fetchProblems(page));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!toDelete) return;
+    setDeleting(true);
+    try {
+      await axiosClient.delete(`/problem/delete/${toDelete._id}`);
+      // Optimistic update
+      setLocalList(problems.filter((p) => p._id !== toDelete._id));
+      toast.success(`"${toDelete.title}" deleted`);
+      setToDelete(null);
+      // Refresh from server in background
+      dispatch(fetchProblems(currentPage));
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete problem');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <>
+      <ConfirmModal
+        problem={toDelete}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setToDelete(null)}
+        loading={deleting}
+      />
+
+      <div className="flex flex-col gap-5">
+
+        {/* Header */}
+        <div>
+          <p className="font-mono text-xs text-red-400 uppercase tracking-widest mb-0.5">// danger zone</p>
+          <h1 className="text-xl font-bold">Delete Problems</h1>
+          <p className="text-sm text-base-content/35 mt-0.5">
+            Permanently remove problems from the platform.
+          </p>
+        </div>
+
+        {/* Table card */}
+        <div
+          className="rounded-xl border border-base-content/8 overflow-hidden bg-base-100"
+          style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.15)' }}
+        >
+          {/* Summary strip */}
+          <div className="flex items-center justify-between px-5 py-2.5 border-b border-base-content/6 bg-base-content/2">
+            <span className="font-mono text-xs text-base-content/30">
+              Page {currentPage} of {totalPages}
+            </span>
+            <span className="font-mono text-xs text-base-content/25">
+              {list.length} problems on this page
+            </span>
+          </div>
+
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-base-content/6">
+                <th className="py-2.5 pl-5 pr-2 text-left font-mono text-[10px] text-base-content/25 uppercase tracking-widest w-8">#</th>
+                <th className="py-2.5 pr-4 text-left font-mono text-[10px] text-base-content/25 uppercase tracking-widest">Title</th>
+                <th className="py-2.5 pr-4 text-left font-mono text-[10px] text-base-content/25 uppercase tracking-widest">Diff.</th>
+                <th className="py-2.5 pr-4 text-left font-mono text-[10px] text-base-content/25 uppercase tracking-widest hidden md:table-cell">Tags</th>
+                <th className="py-2.5 pr-5 text-right font-mono text-[10px] text-base-content/25 uppercase tracking-widest">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading
+                ? Array(10).fill(0).map((_, i) => <SkeletonRow key={i} />)
+                : problems.length === 0
+                  ? (
+                    <tr>
+                      <td colSpan={5} className="py-16 text-center">
+                        <p className="font-mono text-sm text-base-content/25">No problems found.</p>
+                      </td>
+                    </tr>
+                  )
+                  : problems.map((problem, i) => {
+                    const diff = DIFF[problem.difficulty?.toLowerCase()] ?? 'text-base-content/40 bg-base-content/5 border-base-content/15';
+                    const globalIdx = (currentPage - 1) * 10 + i + 1;
+
+                    return (
+                      <tr
+                        key={problem._id}
+                        className="group border-b border-base-content/5 last:border-none hover:bg-base-content/2 transition-colors duration-150"
+                      >
+                        {/* # */}
+                        <td className="py-3.5 pl-5 pr-2 font-mono text-xs text-base-content/25 w-8">
+                          {globalIdx}
+                        </td>
+
+                        {/* Title */}
+                        <td className="py-3.5 pr-4">
+                          <span className="text-sm font-medium text-base-content/80">{problem.title}</span>
+                        </td>
+
+                        {/* Difficulty */}
+                        <td className="py-3.5 pr-4">
+                          <span className={`badge badge-sm badge-outline bg-transparent font-mono capitalize ${diff}`}>
+                            {problem.difficulty}
+                          </span>
+                        </td>
+
+                        {/* Tags */}
+                        <td className="py-3.5 pr-4 hidden md:table-cell">
+                          <div className="flex flex-wrap gap-1">
+                            {(problem.tags || []).slice(0, 2).map((tag) => (
+                              <span
+                                key={tag}
+                                className="badge badge-sm rounded-md border-none bg-blue-500/10 text-blue-400 font-mono"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                            {(problem.tags || []).length > 2 && (
+                              <span className="font-mono text-[10px] text-base-content/25">
+                                +{problem.tags.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Delete button */}
+                        <td className="py-3.5 pr-5 text-right">
+                          <button
+                            onClick={() => setToDelete(problem)}
+                            className="px-3 py-1.5 rounded-lg font-mono text-xs border border-red-500/20 bg-red-500/5 text-red-400/60
+                                       hover:bg-red-500/10 hover:border-red-500/35 hover:text-red-400
+                                       transition-all duration-150"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+              }
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        {!loading && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
+      </div>
+    </>
+  );
+}

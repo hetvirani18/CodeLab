@@ -10,6 +10,7 @@ import ProblemPage from "./pages/ProblemPage";
 import CreateProblem from './components/admin/CreateProblem';
 import DeleteProblem from './components/admin/DeleteProblem';
 import UpdateProblem from './components/admin/UpdateProblem';
+import UpdateProblemForm from './components/admin/UpdateProblemForm';
 import AdminVideo from "./components/admin/AdminVideo";
 import VideoUpload from "./components/admin/VideoUpload";
 import Home from "./pages/Home";
@@ -80,6 +81,7 @@ function App() {
           <Route index element={<Navigate to="create" replace />} />
           <Route path="create" element={<CreateProblem />} />
           <Route path="update" element={<UpdateProblem />} />
+          <Route path="update/:problemId" element={<UpdateProblemForm />} />
           <Route path="delete" element={<DeleteProblem />} />
           <Route path="video"  element={<AdminVideo />} />
         </Route>
