@@ -16,6 +16,7 @@ import VideoUpload from "./components/admin/VideoUpload";
 import Home from "./pages/Home";
 import { Toaster } from "react-hot-toast";
 import { fetchUserActivity } from './store/activitySlice';
+import { ReceiptEuro } from "lucide-react";
 
 function AdminRoute({ children }) {
   const { isAuthenticated, user } = useSelector((s) => s.auth);
@@ -84,10 +85,8 @@ function App() {
           <Route path="update/:problemId" element={<UpdateProblemForm />} />
           <Route path="delete" element={<DeleteProblem />} />
           <Route path="video"  element={<AdminVideo />} />
+          <Route path="upload/:problemId" element={<VideoUpload />} />
         </Route>
-
-        {/* Video upload lives outside the admin shell (full-page flow) */}
-        <Route path="/admin/upload/:problemId" element={<AdminRoute><VideoUpload /></AdminRoute>} />
 
         {/* ── 404 fallback ── */}
         <Route path="*" element={<Navigate to="/" replace />} />
