@@ -8,7 +8,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { initChat, addMessage, clearMessageAnimation, setThinking, clearChat } from "../../store/chatSlice";
 import { useState } from "react";
-import { LoaderCircle, SendHorizontal } from "lucide-react";
+import { Bot, LoaderCircle, SendHorizontal } from "lucide-react";
 
 // ─────────────────────────────────────────
 // Typewriter hook
@@ -82,13 +82,30 @@ function MDContent({ content }) {
                   <CopyBtn code={code} />
                 </div>
                 <SyntaxHighlighter
-                  language={lang}
-                  style={oneDark}
-                  customStyle={{ margin: 0, padding: '14px 16px', fontSize: '12.5px', background: '#0d1117', borderRadius: 0 }}
-                  showLineNumbers
-                  lineNumberStyle={{ color: 'rgba(255,255,255,0.15)', fontSize: '11px' }}
-                >
-                  {code}
+                    language={lang}
+                    style={oneDark}
+                    showLineNumbers
+                    wrapLines={false}
+                    useInlineStyles={true}
+                    customStyle={{
+                        margin: 0,
+                        padding: '14px 16px',
+                        fontSize: '12.5px',
+                        background: '#0d1117',
+                        borderRadius: 0,
+                    }}
+                    codeTagProps={{
+                        style: {
+                        background: 'transparent',
+                        fontFamily: 'JetBrains Mono, monospace',
+                        }
+                    }}
+                    lineNumberStyle={{
+                        color: 'rgba(255,255,255,0.15)',
+                        fontSize: '11px',
+                    }}
+                    >
+                    {code}
                 </SyntaxHighlighter>
               </div>
             );
@@ -150,7 +167,7 @@ function AIMessage({ text, animate, onAnimationEnd, onProgress }) {
         className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold mt-0.5"
         style={{ background: 'rgba(0,230,118,0.15)', color: 'var(--green)', border: '1px solid rgba(0,230,118,0.2)' }}
       >
-        AI
+        <Bot />
       </div>
       <div className="flex-1 min-w-0">
         <MDContent content={displayed} />
@@ -186,29 +203,36 @@ function UserMessage({ text }) {
 // ─────────────────────────────────────────
 function ThinkingBubble() {
   return (
-    <div className="flex gap-2.5 items-start">
+    <div className="flex gap-3 items-start animate-in fade-in duration-200">
+      
+      {/* AI Avatar */}
       <div
-        className="w-6 h-6 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold"
-        style={{ background: 'rgba(0,230,118,0.15)', color: 'var(--green)', border: '1px solid rgba(0,230,118,0.2)' }}
+        className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center"
+        style={{
+          background: 'rgba(0,230,118,0.12)',
+          color: 'var(--green)',
+          border: '1px solid rgba(0,230,118,0.2)',
+        }}
       >
-        AI
+        <Bot size={14} />
       </div>
+
+      {/* Bubble */}
       <div
-        className="flex items-center gap-1.5 px-4 py-3 rounded-2xl rounded-bl-sm"
-        style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+        className="flex items-center gap-2 px-4 py-3 rounded-2xl rounded-bl-sm backdrop-blur-md"
+        style={{
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid rgba(255,255,255,0.07)',
+        }}
       >
-        {[0, 0.18, 0.36].map((delay, i) => (
-          <span
-            key={i}
-            className="w-1.5 h-1.5 rounded-full"
-            style={{ background: 'var(--green)', animation: `bounce 1s ease-in-out ${delay}s infinite`, opacity: 0.7 }}
-          />
-        ))}
+        
+        {/* DaisyUI Loader */}
+        <span className="loading loading-dots loading-sm text-success"></span>
+
       </div>
     </div>
   );
 }
-
 // ─────────────────────────────────────────
 // Main ChatAI
 // ─────────────────────────────────────────
@@ -271,10 +295,10 @@ export default function ChatAI({ code, selectedLanguage }) {
 
   return (
     <>
-      <style>{`
+      {/* <style>{`
         @keyframes blink  { 50% { opacity: 0; } }
         @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-      `}</style>
+      `}</style> */}
 
       {/* ── Outer card ── */}
       <div
@@ -289,7 +313,7 @@ export default function ChatAI({ code, selectedLanguage }) {
               className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold"
               style={{ background: 'rgba(0,230,118,0.15)', color: 'var(--green)', border: '1px solid rgba(0,230,118,0.2)' }}
             >
-              AI
+              <Bot />
             </div>
             <span className="text-sm font-medium text-base-content/70">DSA Tutor</span>
           </div>
