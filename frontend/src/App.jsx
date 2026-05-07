@@ -1,49 +1,55 @@
-import {Routes, Route, Navigate } from "react-router";
+import { Routes, Route, Navigate } from "react-router";
 import Problemset from "./pages/Problemset";
 import Login from "./pages/Login";
 import Signup from "./pages/signup";
-import {checkAuth} from './store/authSlice';
+import { checkAuth } from './store/authSlice';
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import AdminPanel from "./pages/Admin";
+import Admin from "./pages/Admin";
 import ProblemPage from "./pages/ProblemPage";
-import CreateProblem from './components/CreateProblem';
-import DeleteProblem from './components/DeleteProblem';
-import UpdateProblem from './components/UpdateProblem';
-import AdminVideo from "./components/AdminVideo";
-import VideoUpload from "./components/VideoUpload";
+import CreateProblem from './components/admin/CreateProblem';
+import DeleteProblem from './components/admin/DeleteProblem';
+import UpdateProblem from './components/admin/UpdateProblem';
+import AdminVideo from "./components/admin/AdminVideo";
+import VideoUpload from "./components/admin/VideoUpload";
 import Home from "./pages/Home";
 import { Toaster } from "react-hot-toast";
-import {fetchUserActivity} from './store/activitySlice';
+import { fetchUserActivity } from './store/activitySlice';
 
-function App(){
+function AdminRoute({ children }) {
+  const { isAuthenticated, user } = useSelector((s) => s.auth);
+  if (!isAuthenticated || user?.role !== 'admin') return <Navigate to="/" replace />;
+  return children;
+}
 
-  //check if user is authenticated or not 
-  
-  const{isAuthenticated, user, loading} = useSelector((state) => state.auth);
+function PrivateRoute({ children }) {
+  const { isAuthenticated } = useSelector((s) => s.auth);
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return children;
+}
+
+function App() {
+  const { isAuthenticated, loading } = useSelector((s) => s.auth);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(checkAuth())
       .unwrap()
-      .then(() => dispatch(fetchUserActivity()));
-  }, [dispatch]);  //you can also leave empty array dispatch will not change so its same
-  
+      .then(() => dispatch(fetchUserActivity()))
+      .catch(() => {});
+  }, [dispatch]);
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <span className="loading loading-spinner loading-lg"></span>
+      <div className="min-h-screen flex items-center justify-center bg-base-300">
+        <span className="loading loading-spinner loading-lg" style={{ color: 'var(--green)' }} />
       </div>
     );
   }
 
-  // console.log(document.cookie);
-  // console.log("User:", user);
-  // console.log("Is Authenticated:", isAuthenticated);
-  // console.log("role", user?.role);
-
-  return (<>
-    <Toaster
+  return (
+    <>
+      <Toaster
         position="top-right"
         toastOptions={{
           style: {
@@ -58,21 +64,34 @@ function App(){
           error:   { iconTheme: { primary: '#ff5555', secondary: '#0d1117' } },
         }}
       />
-    <Routes>
-      <Route path="/" element = {<Home />}/>
-      <Route path="problemset" element = {isAuthenticated ? <Problemset /> : <Navigate to='/login' /> } />
-      <Route path="/login" element = {isAuthenticated ? <Navigate to ='/' /> : <Login />} />
-      <Route path="/signup" element = {isAuthenticated ? <Navigate to = '/' /> : <Signup />} />
-      <Route path="/problem/:problemId" element = { <ProblemPage />} />
 
-      <Route path="/admin" element= {isAuthenticated && user?.role === 'admin' ? <AdminPanel /> : <Navigate to="/" /> } />
-      <Route path="/admin/create" element= {isAuthenticated && user?.role === 'admin' ? <CreateProblem /> : <Navigate to="/" /> } />
-      <Route path="/admin/update" element= {isAuthenticated && user?.role === 'admin' ? <UpdateProblem /> : <Navigate to="/" /> } />
-      <Route path="/admin/delete" element= {isAuthenticated && user?.role === 'admin' ? <DeleteProblem /> : <Navigate to="/" /> } />
-      <Route path="/admin/video" element= {isAuthenticated && user?.role === 'admin' ? <AdminVideo /> : <Navigate to="/" /> } />
-      <Route path="/admin/upload/:problemId" element= {isAuthenticated && user?.role === 'admin' ? <VideoUpload /> : <Navigate to="/" /> } />
-    </Routes>
-  </>)
+      <Routes>
+        {/* ── Public ── */}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+        <Route path="/signup" element={isAuthenticated ? <Navigate to="/" replace /> : <Signup />} />
+
+        {/* ── Protected ── */}
+        <Route path="/problemset" element={<PrivateRoute><Problemset /></PrivateRoute>} />
+        <Route path="/problem/:problemId" element={<PrivateRoute><ProblemPage /></PrivateRoute>} />
+
+        {/* ── Admin — nested routes share the Admin layout/subnav ── */}
+        <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} >
+          <Route index element={<Navigate to="create" replace />} />
+          <Route path="create" element={<CreateProblem />} />
+          <Route path="update" element={<UpdateProblem />} />
+          <Route path="delete" element={<DeleteProblem />} />
+          <Route path="video"  element={<AdminVideo />} />
+        </Route>
+
+        {/* Video upload lives outside the admin shell (full-page flow) */}
+        <Route path="/admin/upload/:problemId" element={<AdminRoute><VideoUpload /></AdminRoute>} />
+
+        {/* ── 404 fallback ── */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
+  );
 }
 
 export default App;

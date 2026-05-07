@@ -1,95 +1,92 @@
-import React from 'react';
-import { Plus, Edit, Trash2, Video } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router';
+import { Plus, Edit, Trash2, Video, Shield } from 'lucide-react';
+import { NavLink, Outlet, Navigate } from 'react-router';
+import { useSelector } from 'react-redux';
 import Navbar from '../components/Navbar';
-import CreateProblem from '../components/CreateProblem';
-import UpdateProblem from '../components/UpdateProblem';
-import DeleteProblem from '../components/DeleteProblem';
-import AdminVideo from '../components/AdminVideo';
 
-function Admin() {
-  const location = useLocation();
-  const activeId = location.pathname.split('/')[2] || 'create';
+const ADMIN_TABS = [
+  {
+    id:          'create',
+    label:       'Create Problem',
+    description: 'Add a new coding problem',
+    icon:        Plus,
+    to:          '/admin/create',
+    accent:      { text: 'text-green-400',  border: 'border-green-500/25',  bg: 'bg-green-500/8'  },
+  },
+  {
+    id:          'update',
+    label:       'Update Problem',
+    description: 'Edit existing problems',
+    icon:        Edit,
+    to:          '/admin/update',
+    accent:      { text: 'text-yellow-400', border: 'border-yellow-500/25', bg: 'bg-yellow-500/8' },
+  },
+  {
+    id:          'delete',
+    label:       'Delete Problem',
+    description: 'Remove problems',
+    icon:        Trash2,
+    to:          '/admin/delete',
+    accent:      { text: 'text-red-400',    border: 'border-red-500/25',    bg: 'bg-red-500/8'    },
+  },
+  {
+    id:          'video',
+    label:       'Manage Videos',
+    description: 'Upload or delete editorials',
+    icon:        Video,
+    to:          '/admin/video',
+    accent:      { text: 'text-blue-400',   border: 'border-blue-500/25',   bg: 'bg-blue-500/8'   },
+  },
+];
 
-  const adminOptions = [
-    {
-      id: 'create',
-      title: 'Create Problem',
-      description: 'Add a new coding problem to the platform',
-      icon: Plus,
-      color: 'btn-success',
-      bgColor: 'bg-success/10',
-      route: '/admin/create'
-    },
-    {
-      id: 'update',
-      title: 'Update Problem',
-      description: 'Edit existing problems and their details',
-      icon: Edit,
-      color: 'btn-warning',
-      bgColor: 'bg-warning/10',
-      route: '/admin/update'
-    },
-    {
-      id: 'delete',
-      title: 'Delete Problem',
-      description: 'Remove problems from the platform',
-      icon: Trash2,
-      color: 'btn-error',
-      bgColor: 'bg-error/10',
-      route: '/admin/delete'
-    },
-    {
-      id: 'video',
-      title: 'Video Problem',
-      description: 'Uploade or Delete videos',
-      icon: Video,
-      color: 'btn-success',
-      bgColor: 'bg-success/10',
-      route: '/admin/video'
-    }
-  ];
+export default function Admin() {
+  const { isAuthenticated, user } = useSelector((s) => s.auth);
 
-  const ActivePanel =
-    activeId === 'update' ? UpdateProblem :
-    activeId === 'delete' ? DeleteProblem :
-    activeId === 'video'  ? AdminVideo :
-    CreateProblem;
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
 
   return (
-    <div className="min-h-screen bg-base-200">
+    <div className="min-h-screen bg-base-300">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-5xl mx-auto">
-          {/* Sub navbar */}
-          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-base-content/10 bg-base-100 p-2 mb-6">
-            {adminOptions.map((option) => {
-              const IconComponent = option.icon;
-              const isActive = activeId === option.id;
-              return (
-                <NavLink
-                  key={option.id}
-                  to={option.route}
-                  className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150
-                    ${isActive
-                      ? 'bg-green-500/10 text-green-400 border border-green-500/25'
-                      : 'text-base-content/60 hover:text-base-content/90 hover:bg-base-200'
-                    }`}
-                >
-                  <IconComponent size={16} />
-                  {option.title}
-                </NavLink>
-              );
-            })}
-          </div>
 
-          <div className="rounded-xl border border-base-content/10 bg-base-100 p-4">
-            <ActivePanel />
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+
+        {/* Page header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <Shield size={16} className="text-green-400" />
+            <span className="font-mono text-xs text-green-400 uppercase tracking-widest">Admin Panel</span>
           </div>
+          <h1 className="text-2xl font-bold">Manage Platform</h1>
+          <p className="text-base-content/40 text-sm mt-0.5">Create, edit, and manage problems and editorial videos.</p>
         </div>
+
+        {/* Subnav */}
+        <div className="flex flex-wrap items-center gap-1.5 rounded-xl border border-base-content/8 bg-base-200 p-1.5 mb-6">
+          {ADMIN_TABS.map(({ id, label, icon: Icon, to, accent }) => (
+            <NavLink
+              key={id}
+              to={to}
+              className={({ isActive }) =>
+                `flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150
+                 ${isActive
+                   ? `${accent.bg} ${accent.text} border ${accent.border}`
+                   : 'text-base-content/50 hover:text-base-content/80 hover:bg-base-content/5 border border-transparent'
+                 }`
+              }
+            >
+              <Icon size={15} />
+              {label}
+            </NavLink>
+          ))}
+        </div>
+
+        {/* Active panel — rendered by child route */}
+        <div className="rounded-xl border border-base-content/8 bg-base-200 p-5 sm:p-6">
+          <Outlet />
+        </div>
+
       </div>
     </div>
   );
 }
-
-export default Admin;

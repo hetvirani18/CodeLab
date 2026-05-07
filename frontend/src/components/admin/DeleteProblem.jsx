@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import axiosClient from '../utils/axiosClient'
-import { NavLink } from 'react-router';
+import axiosClient from '../../utils/axiosClient'
 
-const AdminVideo = () => {
+const DeleteProblem = () => {
   const [problems, setProblems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,20 +18,21 @@ const AdminVideo = () => {
       setProblems(data.problems);
     } catch (err) {
       setError('Failed to fetch problems');
-      console.log(err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this video?')) return;
+    if (!window.confirm('Are you sure you want to delete this problem?')) return;
     
     try {
-      await axiosClient.delete(`/video/delete/${id}`);
+      await axiosClient.delete(`/problem/delete/${id}`);
+      setProblems(problems.filter(problem => problem._id !== id));
     } catch (err) {
-      console.log(err);
-      setError(err);
+      setError('Failed to delete problem');
+      console.error(err);
     }
   };
 
@@ -52,7 +52,7 @@ const AdminVideo = () => {
           <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>{error.response.data.error}</span>
+          <span>{error}</span>
         </div>
       </div>
     );
@@ -61,7 +61,7 @@ const AdminVideo = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Video Uploade and Delete</h1>
+        <h1 className="text-3xl font-bold">Delete Problems</h1>
       </div>
 
       <div className="overflow-x-auto">
@@ -72,8 +72,7 @@ const AdminVideo = () => {
               <th className="w-4/12">Title</th>
               <th className="w-2/12">Difficulty</th>
               <th className="w-3/12">Tags</th>
-              <th className="w-2/12">Uploade</th>
-              <th className="w-2/12">Delete</th>
+              <th className="w-2/12">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -83,9 +82,9 @@ const AdminVideo = () => {
                 <td>{problem.title}</td>
                 <td>
                   <span className={`badge ${
-                    problem.difficulty === 'easy' 
+                    problem.difficulty === 'Easy' 
                       ? 'badge-success' 
-                      : problem.difficulty === 'medium' 
+                      : problem.difficulty === 'Medium' 
                         ? 'badge-warning' 
                         : 'badge-error'
                   }`}>
@@ -98,13 +97,6 @@ const AdminVideo = () => {
                       {tag}
                     </span>
                   ))}
-                </td>
-                <td>
-                  <div className="flex space-x-2">
-                    <NavLink to={`/admin/upload/${problem._id}`} className="btn btn-sm btn-primary">
-                      Uploade
-                    </NavLink>
-                  </div>
                 </td>
                 <td>
                   <div className="flex space-x-2">
@@ -125,4 +117,4 @@ const AdminVideo = () => {
   );
 };
 
-export default AdminVideo;
+export default DeleteProblem;
