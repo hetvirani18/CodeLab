@@ -18,6 +18,7 @@ import { Toaster } from "react-hot-toast";
 import { fetchUserActivity } from './store/activitySlice';
 import { ReceiptEuro } from "lucide-react";
 import Profile from "./pages/Profile";
+import PublicProfile from "./pages/PublicProfile";
 
 function AdminRoute({ children }) {
   const { isAuthenticated, user } = useSelector((s) => s.auth);
@@ -73,6 +74,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
         <Route path="/signup" element={isAuthenticated ? <Navigate to="/" replace /> : <Signup />} />
+        <Route path="/profile/:id" element={<PublicProfile />} />
 
         {/* ── Protected ── */}
         <Route path="/problemset" element={<PrivateRoute><Problemset /></PrivateRoute>} />

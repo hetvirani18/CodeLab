@@ -12,18 +12,25 @@ const STATUS = {
   error: { label: 'Error', color: 'text-red-400 bg-red-500/8 border-red-500/25' },
 };
 
-export default function RecentSubmissions() {
+export default function RecentSubmissions({ items, loading: externalLoading, error: externalError }) {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    if (items) {
+      setSubmissions(items);
+      setLoading(false);
+      setError(null);
+      return undefined;
+    }
+
     let active = true;
     axiosClient.get('/submission/user-submissions?limit=10')
       .then(({ data }) => {
         if (!active) return;
-        const items = Array.isArray(data) ? data : data?.submissions || [];
-        setSubmissions(items);
+        const list = Array.isArray(data) ? data : data?.submissions || [];
+        setSubmissions(list);
       })
       .catch(() => {
         if (!active) return;
@@ -35,11 +42,11 @@ export default function RecentSubmissions() {
       });
 
     return () => { active = false; };
-  }, []);
+  }, [items]);
 
   const fmtDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  if (loading) {
+  if (externalLoading ?? loading) {
     return (
       <div className="flex flex-col gap-2">
         {Array(5).fill(0).map((_, i) => (
@@ -49,10 +56,10 @@ export default function RecentSubmissions() {
     );
   }
 
-  if (error) {
+  if (externalError || error) {
     return (
       <div className="py-10 text-center font-mono text-sm text-base-content/30">
-        {error}
+        {externalError || error}
       </div>
     );
   }

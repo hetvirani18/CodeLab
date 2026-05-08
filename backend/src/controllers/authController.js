@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const redisClient = require('../config/redis');
 const Submission = require('../models/submission');
+const Problem = require('../models/problem');
 const cloudinary = require('cloudinary').v2;
 const mongoose = require('mongoose');
 
@@ -273,4 +274,86 @@ const getUserActivity = async (req, res) => {
   }
 };
 
-module.exports = {register, login, logout, getProfile, adminRegistor, deleteProfile, updateProfile, getUserActivity};
+const getPublicProfile = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId).select('firstName lastName profilePic problemSolved');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const data = await Submission.aggregate([
+      {
+        $match: {
+          userId: new mongoose.Types.ObjectId(userId),
+          status: "accepted"
+        }
+      },
+      {
+        $group: {
+          _id: {
+            problemId: "$problemId",
+            date: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$createdAt",
+                timezone: TIME_ZONE
+              }
+            }
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$_id.date",
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const heatmap = {};
+    data.forEach(d => {
+      heatmap[d._id] = d.count;
+    });
+
+    const today = formatDateInTimeZone(new Date());
+    const todaySolved = !!heatmap[today];
+    const streak = calculateStreak(heatmap, today);
+    const totalSolved = user?.problemSolved?.length || 0;
+
+    const solvedIds = user?.problemSolved || [];
+    let difficulty = { easy: 0, medium: 0, hard: 0 };
+    if (solvedIds.length > 0) {
+      const [easy, medium, hard] = await Promise.all([
+        Problem.countDocuments({ _id: { $in: solvedIds }, difficulty: 'easy' }),
+        Problem.countDocuments({ _id: { $in: solvedIds }, difficulty: 'medium' }),
+        Problem.countDocuments({ _id: { $in: solvedIds }, difficulty: 'hard' })
+      ]);
+      difficulty = { easy, medium, hard };
+    }
+
+    const recentSubmissions = await Submission.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate('problemId', 'title difficulty');
+
+    res.json({
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePic: user.profilePic
+      },
+      activity: { heatmap, streak, todaySolved, totalSolved },
+      difficulty,
+      recentSubmissions
+    });
+  } catch (err) {
+    console.log("Error in getPublicProfile: ", err.message);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = {register, login, logout, getProfile, adminRegistor, deleteProfile, updateProfile, getUserActivity, getPublicProfile};

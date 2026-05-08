@@ -9,6 +9,7 @@ import DifficultyBreakdown from '../components/profile/DifficultyBreakdown';
 import YearHeatmap from '../components/profile/YearHeatmap';
 import RecentSubmissions from '../components/profile/RecentSubmissions';
 import EditNameModal from '../components/profile/EditNameModal';
+import toast from 'react-hot-toast';
 
 // ─────────────────────────────────────────
 // Main Profile page
@@ -27,6 +28,26 @@ export default function Profile() {
   }, [dispatch]);
 
   const handleUpdate = (data) => dispatch(updateProfile(data)).unwrap();
+
+  const handleShare = async () => {
+    if (!user?._id) return;
+    const profileUrl = `${window.location.origin}/profile/${user._id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'CodeLab Profile', url: profileUrl });
+        return;
+      } catch {
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      toast.success('Profile link copied');
+    } catch {
+      toast.error('Failed to copy link');
+    }
+  };
 
   const difficultyCounts = solvedList.reduce(
     (acc, problem) => {
@@ -71,6 +92,13 @@ export default function Profile() {
               onEditName={() => setEditOpen(true)}
               onUpdateAvatar={handleUpdate}
             />
+            <button
+              onClick={handleShare}
+              className="btn btn-sm bg-base-300/80 border border-base-content/10 text-sm font-mono text-base-content/70
+                         hover:text-base-content hover:border-base-content/20"
+            >
+              Share profile
+            </button>
             <DifficultyBreakdown
               easyCount={easyCount}
               mediumCount={mediumCount}
