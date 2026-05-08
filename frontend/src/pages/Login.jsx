@@ -9,6 +9,7 @@ import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
 import LiveCode from '../components/LiveCode';
 import {fetchUserActivity} from '../store/activitySlice';
+import Logo from '../components/Logo';
 
 const loginSchema = z.object({
   emailId: z.string().email('Invalid Email'),
@@ -65,8 +66,9 @@ function Login() {
         {/* Logo (fixed position) */}
         <NavLink
           to="/"
-          className="absolute top-6 left-6 text-3xl sm:text-4xl font-mono font-bold lg:hidden z-20"
+          className="absolute top-6 left-6 flex items-center gap-2 text-3xl sm:text-4xl font-mono font-bold lg:hidden z-20"
         >
+          <Logo size={32} />
           code<span className='text-green-400'>Lab</span>
         </NavLink>
 

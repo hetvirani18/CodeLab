@@ -6,6 +6,7 @@ import { fetchUserActivity } from "../store/activitySlice";
 import { NavLink, useNavigate } from "react-router";
 import StreakBadge from "./StreakBadge";
 import { motion } from "motion/react";
+import Logo from "./Logo";
 
 export default function Navbar() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
@@ -35,7 +36,8 @@ export default function Navbar() {
 
         {/* ── LEFT: Logo ── */}
         <div className="navbar-start">
-          <NavLink to="/" className="font-mono text-xl font-bold">
+          <NavLink to="/" className="flex items-center gap-2 font-mono text-xl font-bold">
+            <Logo />
             code<span className="text-green-400">Lab</span>
           </NavLink>
         </div>

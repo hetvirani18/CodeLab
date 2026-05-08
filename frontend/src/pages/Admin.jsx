@@ -49,7 +49,7 @@ export default function Admin() {
     <div className="min-h-screen bg-base-300">
       <Navbar />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-8">
 
         {/* Page header */}
         <div className="mb-6">

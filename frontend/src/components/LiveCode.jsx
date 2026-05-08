@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router';
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import Logo from './Logo';
 
 
 const CODE_STRING =
@@ -114,10 +115,11 @@ export default function LiveCode() {
       />
 
       {/* Logo */}
-      <NavLink to="/" className="relative z-10 font-mono text-2xl font-bold">
+      <NavLink to="/" className="relative z-10 flex items-center gap-2 font-mono text-2xl font-bold">
+        <Logo size={34} />
         <span className="text-3xl font-bold">
-            code<span className="text-green-400">Lab</span>
-          </span>
+          code<span className="text-green-400">Lab</span>
+        </span>
       </NavLink>
 
       {/* Code editor card */}

@@ -94,7 +94,7 @@ const ProblemPage = () => {
         onRun={handleRun}
         onSubmit={handleSubmitCode}
       />
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0" >
         <LeftPanel
           code={code}
           selectedLanguage={selectedLanguage}

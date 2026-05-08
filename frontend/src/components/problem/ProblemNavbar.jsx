@@ -6,6 +6,7 @@ import { logoutUser } from '../../store/authSlice';
 import { fetchUserActivity } from '../../store/activitySlice';
 import StreakBadge from '../StreakBadge';
 import { CloudUpload, Play } from 'lucide-react';
+import Logo from '../Logo';
 
 export default function ProblemNavbar({
   onRun,
@@ -36,7 +37,8 @@ export default function ProblemNavbar({
       <div className="container mx-auto navbar min-h-15">
         {/* Left */}
         <div className="navbar-start gap-5">
-          <NavLink to="/" className="font-mono text-lg font-bold">
+          <NavLink to="/" className="flex items-center gap-2 font-mono text-lg font-bold">
+            <Logo size={28} />
             code<span className="text-green-400">Lab</span>
           </NavLink>
           <NavLink

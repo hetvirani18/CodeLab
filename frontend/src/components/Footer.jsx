@@ -1,5 +1,6 @@
 import { motion, useInView } from "motion/react";
 import { useRef } from "react";
+import Logo from "./Logo";
 
 const SOCIALS = [
   {
@@ -61,8 +62,9 @@ export default function Footer() {
           initial={{ opacity: 0, y: 12 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.5 }}
-          className="font-mono text-xl font-bold"
+          className="flex items-center gap-2 font-mono text-xl font-bold"
         >
+          <Logo size={30} />
           code<span className="text-green-400">Lab</span>
         </motion.div>
 

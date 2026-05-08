@@ -7,6 +7,7 @@ import { useNavigate, NavLink } from 'react-router';
 import { registerUser } from '../store/authSlice';
 import LiveCode from '../components/LiveCode';
 import { motion } from 'motion/react';
+import Logo from '../components/Logo';
 
 const signupSchema = z.object({
   firstName: z.string().min(3, "Minimum character should be 3"),
@@ -74,8 +75,9 @@ function Signup() {
         {/* Logo (fixed position) */}
         <NavLink
           to="/"
-          className="absolute top-6 left-6 text-3xl sm:text-4xl font-mono font-bold lg:hidden z-20"
+          className="absolute top-6 left-6 flex items-center gap-2 text-3xl sm:text-4xl font-mono font-bold lg:hidden z-20"
         >
+          <Logo size={32} />
           code<span className='text-green-400'>Lab</span>
         </NavLink>
 
