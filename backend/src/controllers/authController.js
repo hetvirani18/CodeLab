@@ -98,8 +98,22 @@ const adminRegistor = async (req, res) => {
         validate(req.body);
         
         const {password, emailId} = req.body;
-        req.body.password = await bcrypt.hash(password, 10);
-        const user = await User.create(req.body);
+
+        const existingUser = await User.findOne({ emailId });
+
+        if (existingUser) {
+        return res.status(409).json({
+            message: "Email already exists"
+        });
+        }
+    
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await User.create({
+            firstName: req.body.firstName,
+            emailId,
+            password: hashedPassword,
+            role: "admin"
+        });
 
         res.status(201).json({
             message: 'User Registor Succesfully',
@@ -113,7 +127,7 @@ const adminRegistor = async (req, res) => {
         });
     }
     catch(err){
-        res.status(400).json({message: "Error: "+ err.message});
+        res.status(500).json({message: "Error: "+ err.message});
     }
 }
 

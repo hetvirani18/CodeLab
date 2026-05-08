@@ -1,4 +1,4 @@
-import { Plus, Edit, Trash2, Video, Shield } from 'lucide-react';
+import { Plus, Edit, Trash2, Video, Shield, UserPlus } from 'lucide-react';
 import { NavLink, Outlet, Navigate } from 'react-router';
 import { useSelector } from 'react-redux';
 import Navbar from '../components/Navbar';
@@ -35,6 +35,14 @@ const ADMIN_TABS = [
     icon:        Video,
     to:          '/admin/video',
     accent:      { text: 'text-blue-400',   border: 'border-blue-500/25',   bg: 'bg-blue-500/8'   },
+  },
+  {
+    id:          'admin',
+    label:       'Create Admin',
+    description: 'Invite new admins',
+    icon:        UserPlus,
+    to:          '/admin/create-admin',
+    accent:      { text: 'text-purple-400', border: 'border-purple-500/25', bg: 'bg-purple-500/8' },
   },
 ];
 

@@ -13,6 +13,7 @@ import UpdateProblem from './components/admin/UpdateProblem';
 import UpdateProblemForm from './components/admin/UpdateProblemForm';
 import AdminVideo from "./components/admin/AdminVideo";
 import VideoUpload from "./components/admin/VideoUpload";
+import CreateAdmin from "./components/admin/CreateAdmin";
 import Home from "./pages/Home";
 import { Toaster } from "react-hot-toast";
 import { fetchUserActivity } from './store/activitySlice';
@@ -89,6 +90,7 @@ function App() {
           <Route path="update/:problemId" element={<UpdateProblemForm />} />
           <Route path="delete" element={<DeleteProblem />} />
           <Route path="video"  element={<AdminVideo />} />
+          <Route path="create-admin" element={<CreateAdmin />} />
           <Route path="upload/:problemId" element={<VideoUpload />} />
         </Route>
 
