@@ -24,8 +24,10 @@ const register = async (req, res) => {
             user: {
                 _id: user._id,
                 firstName: user.firstName,
+            lastName: user.lastName,
                 emailId: user.emailId,
-                role: user.role
+            role: user.role,
+            profilePic: user.profilePic
             }
         });
     }
@@ -57,8 +59,10 @@ const login = async (req, res) => {
             user: {
                 _id: user._id,
                 firstName: user.firstName,
+            lastName: user.lastName,
                 emailId: user.emailId,
-                role: user.role
+            role: user.role,
+            profilePic: user.profilePic
             }
         });
         
@@ -119,7 +123,8 @@ const getProfile = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         emailId: user.emailId,
-        problemSolved: user.problemSolved
+      problemSolved: user.problemSolved,
+      profilePic: user.profilePic
     }
     res.status(200).json(ans);
 }

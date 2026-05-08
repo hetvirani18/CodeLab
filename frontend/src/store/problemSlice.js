@@ -29,6 +29,7 @@ const problemsSlice = createSlice({
   name: 'problems',
   initialState: {
     list: [],
+    solvedList: [],
     solvedIds: [],
     totalProblems: 0,
     totalPages: 1,
@@ -55,6 +56,7 @@ const problemsSlice = createSlice({
         state.error = action.payload || 'Failed to load problems';
       })
       .addCase(fetchSolvedProblems.fulfilled, (state, action) => {
+        state.solvedList = action.payload;
         state.solvedIds = action.payload.map((problem) => problem._id);
       })
       .addCase(fetchSolvedProblems.rejected, (state, action) => {

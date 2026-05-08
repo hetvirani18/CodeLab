@@ -215,7 +215,24 @@ const getSubmissions = async (req, res) => {
     }
 }
 
-module.exports = {submitCode, runCode, getSubmissions};
+const getUserSubmissions = async (req, res) => {
+    try{
+        const userId = req.result._id;
+        const limit = Math.min(parseInt(req.query.limit, 10) || 10, 50);
+
+        const submissions = await Submission.find({ userId })
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .populate('problemId', 'title difficulty');
+
+        res.status(200).json({ submissions });
+    }
+    catch(err){
+        res.status(500).send("Error: "+err.message);
+    }
+}
+
+module.exports = {submitCode, runCode, getSubmissions, getUserSubmissions};
 
 // const temp = {
 //     source_code: 'import java.util.*;\n' +

@@ -18,8 +18,10 @@ authRouter.get('/check', userAuthMiddleware, (req, res) => {
         user: {
             _id: req.result._id,
             firstName: req.result.firstName,
+            lastName: req.result.lastName,
             emailId: req.result.emailId,
-            role: req.result.role
+            role: req.result.role,
+            profilePic: req.result.profilePic
         }
     })
 })

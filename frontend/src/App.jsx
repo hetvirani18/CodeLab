@@ -17,6 +17,7 @@ import Home from "./pages/Home";
 import { Toaster } from "react-hot-toast";
 import { fetchUserActivity } from './store/activitySlice';
 import { ReceiptEuro } from "lucide-react";
+import Profile from "./pages/Profile";
 
 function AdminRoute({ children }) {
   const { isAuthenticated, user } = useSelector((s) => s.auth);
@@ -76,6 +77,7 @@ function App() {
         {/* ── Protected ── */}
         <Route path="/problemset" element={<PrivateRoute><Problemset /></PrivateRoute>} />
         <Route path="/problem/:problemId" element={<PrivateRoute><ProblemPage /></PrivateRoute>} />
+        <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
 
         {/* ── Admin — nested routes share the Admin layout/subnav ── */}
         <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} >
