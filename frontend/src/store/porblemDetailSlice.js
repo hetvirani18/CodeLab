@@ -17,10 +17,27 @@ export const runProblem = createAsyncThunk(
   'problemDetail/run',
   async ({ problemId, code, language }, { rejectWithValue }) => {
     try {
-      const { data } = await axiosClient.post(`/submission/run/${problemId}`, { code, language });
+      const { data } = await axiosClient.post(
+        `/submission/run/${problemId}`,
+        { code, language }
+      );
+
       return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+
+      if (error.response?.status === 429) {
+        return rejectWithValue({
+          type: 'RATE_LIMIT',
+          message: 'You are running code too fast. Please wait a few seconds.',
+        });
+      }
+
+      return rejectWithValue({
+        type: 'ERROR',
+        message:
+          error.response?.data?.message ||
+          'Run failed',
+      });
     }
   }
 );
@@ -29,14 +46,30 @@ export const submitProblem = createAsyncThunk(
   'problemDetail/submit',
   async ({ problemId, code, language }, { rejectWithValue }) => {
     try {
-      const { data } = await axiosClient.post(`/submission/submit/${problemId}`, { code, language });
+      const { data } = await axiosClient.post(
+        `/submission/submit/${problemId}`,
+        { code, language }
+      );
+
       return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+
+      if (error.response?.status === 429) {
+        return rejectWithValue({
+          type: 'RATE_LIMIT',
+          message: 'Too many submissions. Please wait a moment.',
+        });
+      }
+
+      return rejectWithValue({
+        type: 'ERROR',
+        message:
+          error.response?.data?.message ||
+          'Submission failed',
+      });
     }
   }
 );
-
 
 const problemDetailSlice = createSlice({
   name: 'problemDetail',
