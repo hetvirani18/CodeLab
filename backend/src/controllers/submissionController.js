@@ -111,16 +111,32 @@ const submitCode = async (req, res) => {
         const accepted = (status == 'accepted')
         res.status(201).json({
             accepted,
-            totalTestCases: submittedResult.testCasesTotal,
+            totalTestCases:  submittedResult.testCasesTotal,
             passedTestCases: testCasesPassed,
-            runtime: (runtime).toFixed(3),
-            memory: memory
+            runtime:         (runtime).toFixed(3),
+            memory:          memory,
+            error:           !accepted ? getStatusLabel(status) : undefined,
+            errorMessage:    !accepted ? submittedResult.errorMessage : undefined,
+            failDetails:     !accepted ? submittedResult.failDetails  : undefined,
+            // e.g. failDetails: { input, expectedOutput, userOutput, caseNumber }
         });
     }
     catch(err){
         console.error(err);
         res.status(500).send("Error: "+err.message);
     }
+}
+
+function getStatusLabel(status) {
+  const labels = {
+    wrong:         'Wrong Answer',
+    tle:           'Time Limit Exceeded',
+    compile_error: 'Compile Error',
+    runtime_error: 'Runtime Error',
+    mle:           'Memory Limit Exceeded',
+    error:         'Runtime Error',
+  };
+  return labels[status] || 'Wrong Answer';
 }
 
 const runCode = async (req, res) => {

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router';
 import { clearResults } from '../../store/porblemDetailSlice';
-import SubmissionResultPanel from '../SubmissionResult';
+import SubmissionResultPanel from './SubmissionResult';
 
 const BASE_TABS = [
   { id: 'description', label: 'Description' },

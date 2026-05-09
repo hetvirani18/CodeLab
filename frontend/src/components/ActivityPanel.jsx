@@ -145,7 +145,7 @@ export default function ActivityPanel() {
       </div>
 
       {/* ── Stats card ── */}
-      <div className="rounded-xl border border-base-content/8 bg-base-300/80 p-5">
+      <div className="rounded-xl border border-base-content/8 bg-base-300/80 p-5 mt-4">
         <p className="font-mono text-xs text-base-content/30 uppercase tracking-widest mb-4">Stats</p>
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
@@ -158,11 +158,6 @@ export default function ActivityPanel() {
             <span className="font-mono text-sm font-bold text-base-content/60">
               {Object.keys(heatmap).length}
             </span>
-          </div>
-          <div className="w-full h-px bg-base-content/6" />
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-base-content/50">Best streak</span>
-            <span className="font-mono text-sm font-bold text-orange-400">{streak} 🔥</span>
           </div>
         </div>
       </div>
