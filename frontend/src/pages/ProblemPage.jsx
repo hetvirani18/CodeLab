@@ -6,6 +6,7 @@ import ProblemNavbar from '../components/problem/ProblemNavbar';
 import StreakCelebration from '../components/problem/StreakCelebration';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
+import { AnimatePresence } from 'motion/react';
 import { fetchUserActivity } from '../store/activitySlice';
 import {
   fetchProblemDetail,
@@ -37,6 +38,16 @@ const ProblemPage = () => {
     dispatch(fetchProblemDetail(problemId));
     return () => { dispatch(clearProblem()); };
   }, [dispatch, problemId]);
+
+  useEffect(() => {
+    if (!showStreak) return undefined;
+
+    const timer = setTimeout(() => {
+      setShowStreak(false);
+    }, 2800);
+
+    return () => clearTimeout(timer);
+  }, [showStreak]);
 
   // Sync code when language or problem changes
   useEffect(() => {
@@ -126,10 +137,9 @@ const ProblemPage = () => {
     <div className="h-screen flex flex-col bg-base-100">
 
       {/* Streak celebration popup */}
-      { showStreak && (
-          <StreakCelebration streak={streak} />
-        )
-      }
+      <AnimatePresence>
+        {showStreak && <StreakCelebration key={streak} streak={streak} />}
+      </AnimatePresence>
 
       <ProblemNavbar
         onRun={handleRun}
