@@ -21,7 +21,6 @@ const rateLimiter = async (req, res, next) => {
         await redisClient.zRemRangeByScore(key, 0, windowTime); // this remove all the scores from 0 to windowTime
 
         const numberOfRequest = await redisClient.zCard(key); //total number of requests if key is not exists then it will return 0
-        console.log(numberOfRequest);
 
         if(numberOfRequest>=maxRequests) return res.status(429).send("Too many requests. Try again in an hour.");
 
@@ -51,7 +50,6 @@ const runRateLimiter = async (req, res, next) => {
         }
         else{
             const [count, lastTime] = data.split(":").map(Number);
-            console.log(count);
 
             if(Date.now()/1000 - lastTime <delayRunTime) return res.status(429).send("Wait a little bit before making another request.");
             if(count>=maxRunRequests)  return res.status(429).send("Too many requests. Try again in an hour.");
@@ -75,7 +73,6 @@ const submitRateLimiter = async (req, res, next) => {
         }
         else{
             const [count, lastTime] = data.split(":").map(Number);
-            console.log(count);
 
             if(Date.now()/1000 - lastTime <delaySubmitTime)  return res.status(429).send("Wait a little bit before making another request.");
             if(count>=maxSubmitRequests)  return res.status(429).send("Too many requests. Try again in an hour.");

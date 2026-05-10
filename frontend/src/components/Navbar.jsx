@@ -15,7 +15,6 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   // Fetch activity when authenticated
-  console.log("activity: ", streak, todaySolved);
   useEffect(() => {
     if (isAuthenticated) dispatch(fetchUserActivity());
   }, [isAuthenticated, dispatch]);

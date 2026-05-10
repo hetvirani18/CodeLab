@@ -127,7 +127,6 @@ const testCode = async (testCases, solution) => {
         const resultTokens = submitResult.map((value) => value.token);
 
         const testResult = await submitToken(resultTokens);
-        console.log(testResult);
 
         for(const test of testResult){
             if(test.status_id !== 3){ 

@@ -249,30 +249,3 @@ const getUserSubmissions = async (req, res) => {
 }
 
 module.exports = {submitCode, runCode, getSubmissions, getUserSubmissions};
-
-// const temp = {
-//     source_code: 'import java.util.*;\n' +
-//       '\n' +
-//       'public class Main {\n' +
-//       '    public static void main(String[] args) {\n' +
-//       '        Scanner sc = new Scanner(System.in);\n' +
-//       '        if (sc.hasNext()) {\n' +
-//       '            String s = sc.next();\n' +
-//       '            String rev = new StringBuilder(s).reverse().toString();\n' +
-//       '            System.out.print(s.equals(rev) ? "true" : "false");\n' +
-//       '        }\n' +
-//       '    }\n' +
-//       '}',
-//     language_id: 62,
-//     stdin: 'hello',
-//     expected_output: 'false',
-//     stdout: 'false',
-//     status_id: 3,
-//     created_at: '2026-03-14T18:25:08.715Z',
-//     finished_at: '2026-03-14T18:25:11.307Z',
-//     time: '0.136',
-//     memory: 12076,
-//     stderr: null,
-//     token: '3cb5db6d-f8ee-409f-942a-cfc2900f57f1',
-//     number_of_runs: 1
-// }

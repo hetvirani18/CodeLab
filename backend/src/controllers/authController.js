@@ -283,7 +283,6 @@ const getUserActivity = async (req, res) => {
     });
 
   } catch (err) {
-    console.log("Error in getUserActivity: ", err.message);
     res.status(500).json({ message: err.message });
   }
 };
@@ -365,7 +364,6 @@ const getPublicProfile = async (req, res) => {
       recentSubmissions
     });
   } catch (err) {
-    console.log("Error in getPublicProfile: ", err.message);
     res.status(500).json({ message: err.message });
   }
 };

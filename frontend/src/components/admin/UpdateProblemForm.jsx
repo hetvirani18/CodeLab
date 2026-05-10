@@ -231,7 +231,6 @@ export default function UpdateProblemForm() {
   };
 
   const onSubmit = async (data) => {
-    console.log('[UpdateProblemForm] submit start', { problemId, data });
     setSubmitting(true);
     try {
       await axiosClient.put(`/problem/update/${problemId}`, data);

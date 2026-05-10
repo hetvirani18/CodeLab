@@ -48,7 +48,6 @@ const generateUploadSignature = async (req, res) => {
     });
 
   } catch (error) {
-    console.log('Error generating upload signature:', error.message);
     res.status(500).json({ error: 'Failed to generate upload credentials' });
   }
 };
@@ -114,7 +113,6 @@ const saveVideoMetadata = async (req, res) => {
     });
 
   } catch (error) {
-    console.log('Error saving video metadata:', error.message);
     res.status(500).json({ error: 'Failed to save video metadata' });
   }
 };
@@ -136,7 +134,6 @@ const deleteVideo = async (req, res) => {
     res.json({ message: 'Video deleted successfully' });
 
   } catch (error) {
-    console.log('Error deleting video:', error.message);
     res.status(500).json({ error: 'Failed to delete video' });
   }
 };
