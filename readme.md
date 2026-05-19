@@ -91,52 +91,52 @@ Base URL: /user
 
 | Method | Endpoint | Auth | Purpose |
 | --- | --- | --- | --- |
-| POST | /user/register | No | Create a new user account. |
-| POST | /user/login | No | Log in and set auth cookie. |
-| POST | /user/logout | User | Log out and invalidate token. |
-| POST | /user/admin/register | Admin | Create a new admin account. |
-| GET | /user/profile | User | Get the logged-in user profile. |
-| GET | /user/public-profile/:id | No | Get a public user profile by id. |
-| DELETE | /user/delete-profile | User | Delete the logged-in user profile. |
-| POST | /user/update-profile | User | Update profile fields or avatar. |
-| GET | /user/activity | User | Fetch activity stats and streaks. |
-| GET | /user/check | User | Validate token and return user info. |
+| POST | /register | No | Create a new user account. |
+| POST | /login | No | Log in and set auth cookie. |
+| POST | /logout | User | Log out and invalidate token. |
+| POST | /admin/register | Admin | Create a new admin account. |
+| GET | /profile | User | Get the logged-in user profile. |
+| GET | /public-profile/:id | No | Get a public user profile by id. |
+| DELETE | /delete-profile | User | Delete the logged-in user profile. |
+| POST | /update-profile | User | Update profile fields or avatar. |
+| GET | /activity | User | Fetch activity stats and streaks. |
+| GET | /check | User | Validate token and return user info. |
 
 Base URL: /problem
 
 | Method | Endpoint | Auth | Purpose |
 | --- | --- | --- | --- |
-| POST | /problem/create | Admin | Create a new coding problem. |
-| PUT | /problem/update/:id | Admin | Update a problem by id. |
-| DELETE | /problem/delete/:id | Admin | Delete a problem by id. |
-| GET | /problem/problem-by-id/:id | User | Get a problem for solving. |
-| GET | /problem/problem-by-id-admin/:id | Admin | Get a problem with admin fields. |
-| GET | /problem/all-problems | User | List all problems for the user. |
-| GET | /problem/problems-solved-by-user | User | Get problems solved by user. |
-| GET | /problem/submitted-codes/:pid | User | Get user submissions for a problem. |
+| POST | /create | Admin | Create a new coding problem. |
+| PUT | /update/:id | Admin | Update a problem by id. |
+| DELETE | /delete/:id | Admin | Delete a problem by id. |
+| GET | /problem-by-id/:id | User | Get a problem for solving. |
+| GET | /problem-by-id-admin/:id | Admin | Get a problem with admin fields. |
+| GET | /all-problems | User | List all problems for the user. |
+| GET | /problems-solved-by-user | User | Get problems solved by user. |
+| GET | /submitted-codes/:pid | User | Get user submissions for a problem. |
 
 Base URL: /submission
 
 | Method | Endpoint | Auth | Purpose |
 | --- | --- | --- | --- |
-| POST | /submission/submit/:id | User | Submit code for final judging. |
-| POST | /submission/run/:id | User | Run code against sample tests. |
-| GET | /submission/user-submissions | User | List submissions by the user. |
-| GET | /submission/submissions/:id | User | List submissions for a problem. |
+| POST | /submit/:id | User | Submit code for final judging. |
+| POST | /run/:id | User | Run code against sample tests. |
+| GET | /user-submissions | User | List submissions by the user. |
+| GET | /submissions/:id | User | List submissions for a problem. |
 
 Base URL: /ai
 
 | Method | Endpoint | Auth | Purpose |
 | --- | --- | --- | --- |
-| POST | /ai/chat | User | Chat with AI tutor for a problem. |
+| POST | /chat | User | Chat with AI tutor for a problem. |
 
 Base URL: /video
 
 | Method | Endpoint | Auth | Purpose |
 | --- | --- | --- | --- |
-| GET | /video/create/:problemId | Admin | Generate Cloudinary upload signature. |
-| POST | /video/save | Admin | Save uploaded video metadata. |
-| DELETE | /video/delete/:problemId | Admin | Delete a solution video by problem. |
+| GET | /create/:problemId | Admin | Generate Cloudinary upload signature. |
+| POST | /save | Admin | Save uploaded video metadata. |
+| DELETE | /delete/:problemId | Admin | Delete a solution video by problem. |
 
 Auth Notes
 ----------
