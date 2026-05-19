@@ -1,7 +1,7 @@
 CodeLab
 =======
 
-Check out the live demo: <ADD_LIVE_DEMO_URL_HERE>
+Check out the live demo: https://code-lab.live
 
 CodeLab is a LeetCode-style coding platform with a built-in code runner, AI tutor chat, streak tracking, and solution video uploads.
 
